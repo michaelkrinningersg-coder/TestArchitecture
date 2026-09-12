@@ -15,6 +15,10 @@ on:
       - "packaging/labcontrol_qt.spec"
       - "tests/test_labcontrol_qt.py"
       - "requirements-qtport.txt"
+      # Der Bau prüft mit diesem Werkzeug und hängt an dieser Regel — beide
+      # gehören in den Filter, sonst läuft nach ihrer Änderung nichts.
+      - "tools/kern_abgleich.py"
+      - ".gitattributes"
       - ".github/workflows/labcontrol-qt-exe.yml"
   workflow_dispatch:
 
