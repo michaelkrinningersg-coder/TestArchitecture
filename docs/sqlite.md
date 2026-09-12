@@ -140,7 +140,7 @@ die Falle aus A. Was geteilt werden muss, gehört weiter ins LIMS.
 ### D — SQLite als Entwicklungs- und Testdatenbank: **ja, und billig**
 
 Der Befund oben macht das leicht: 30 von 30 vollständigen Abfragen laufen nach
-einer Ersetzung. Ein Schemanachbau der 28 Tabellen — nur Struktur, keine echten
+einer Ersetzung. Ein Schemanachbau der 27 wirklich berührten Tabellen — nur Struktur, keine echten
 Daten — würde bringen:
 
 * Entwickeln und Testen ohne VPN und ohne Oracle

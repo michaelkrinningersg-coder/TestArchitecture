@@ -350,12 +350,15 @@ Das ist keine Übertreibung, das ist nachzählbar:
 | Testmodule | 63 |
 | Zeilen Tests | 33 715 |
 | **Tests** | **2 497** |
-| berührte LIMS-Tabellen | **28 von 456** |
+| berührte LIMS-Tabellen | **27 von 456** |
 | Reiter im Messfenster | 13 |
 
-Die letzte Zeile ist die nützlichste Zahl in diesem ganzen Dokument: **28 von
-456.** Ein neues LIMS braucht nicht 456 Tabellen — es braucht die, an denen
-gearbeitet wird, und die sind gezählt und dokumentiert
+Die letzte Zeile ist die nützlichste Zahl in diesem ganzen Dokument: **27 von
+456** — ausgezählt mit [`tools/spaltenbedarf.py`](../tools/spaltenbedarf.py)
+aus dem Quelltext, und davon werden **168 von 5 976 Spalten** gebraucht, also
+**2,8 %** (Einzelheiten in [varianten.md](varianten.md)). Ein neues LIMS
+braucht nicht 456 Tabellen — es braucht die, an denen gearbeitet wird, und die
+sind jetzt gezählt
 ([LIMS-Tabellen.md](https://github.com/michaelkrinningersg-coder/testlims/blob/main/LIMS-Tabellen.md)).
 Das ist ein Datenmodell, über das man an einem Tag reden kann, statt über eine
 gewachsene Landschaft.

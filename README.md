@@ -24,6 +24,11 @@ Dazu drei Untersuchungen, jede mit gemessenen Zahlen statt Einschätzungen:
   liegt](docs/sqlite-neues-lims.md)** — eine `ERGEBNISSE`-förmige Tabelle bis
   25 Mio Zeilen gemessen (die Ankerabfrage bleibt bei 28 ms), Benutzerrechte
   ausprobiert statt behauptet, und PostgreSQL daneben gestellt.
+* **[Zwei Varianten für ein neues LIMS](docs/varianten.md)** — Oracle behalten
+  und ausdünnen, oder SQLite mit der Oberfläche als Rechtesystem? Ausgezählt:
+  von 456 Tabellen werden **27** berührt und **168 von 5 976 Spalten** (2,8 %),
+  in `ERGEBNISSE` 27 von 81. Dazu die fertige schlanke Sicht
+  ([docs/sichten.sql](docs/sichten.sql)) — ohne ein einziges `DROP`.
 * **[Fußballmanager oder Idle-Game mit Qt 6?](docs/spiele.md)** — Takt, Simulation
   und Spielstand gemessen; 20 Saisons Ligahistorie in 0,13 s.
 

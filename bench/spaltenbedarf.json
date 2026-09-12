@@ -1,0 +1,255 @@
+{
+  "spalten": {
+    "a_wasser": [
+      "fluss_kart",
+      "prob_id",
+      "vers_name"
+    ],
+    "anwenderstammdaten": [
+      "username"
+    ],
+    "bew_teil": [
+      "bewertung",
+      "kommentar",
+      "prob_id",
+      "qp_art",
+      "qp_art_kzl",
+      "um_id"
+    ],
+    "einheiten": [
+      "einheit",
+      "id"
+    ],
+    "ergebnisse": [
+      "anwender",
+      "datum_zeit",
+      "einh_id",
+      "einh_ver_id",
+      "fc7",
+      "fc8",
+      "fc9",
+      "gegr_id",
+      "geme_id",
+      "kommentar",
+      "korrektur_flag",
+      "lnr",
+      "mw",
+      "mw_n",
+      "mw_org",
+      "mw_roh",
+      "para_id",
+      "part_id",
+      "pm_id",
+      "pm_ver",
+      "prob_id",
+      "psta_id",
+      "serie",
+      "stan_id",
+      "um_id",
+      "v_faktor",
+      "vkd_id"
+    ],
+    "geraete_anhang": [
+      "geme_id",
+      "gera_id"
+    ],
+    "geraete_pruefungen": [
+      "id",
+      "pruefung",
+      "status"
+    ],
+    "geraete_pruefungen_anhang": [
+      "gegr_id",
+      "gepr_id"
+    ],
+    "parameter": [
+      "id",
+      "name"
+    ],
+    "pm_wellen": [
+      "hfa_code",
+      "id",
+      "kurzname",
+      "ogrenze",
+      "pm_code",
+      "pm_id",
+      "pm_ver",
+      "rsdabs",
+      "rsdproz",
+      "ugrenze",
+      "wellenlaenge"
+    ],
+    "proben": [
+      "bemerkung",
+      "id",
+      "probe_nr",
+      "wdh_me",
+      "wdh_um"
+    ],
+    "probenart": [
+      "art",
+      "id"
+    ],
+    "pruefmethoden": [
+      "format",
+      "formel",
+      "formelkuerzel",
+      "gegr_id",
+      "geme_id",
+      "id",
+      "kurzname",
+      "lsta_id",
+      "name",
+      "para_id",
+      "version"
+    ],
+    "qp_serien": [
+      "bemerkung",
+      "geprueft",
+      "serie"
+    ],
+    "rohwertparameter": [
+      "formelkuerzel",
+      "id",
+      "kuerzel",
+      "name",
+      "sort"
+    ],
+    "s_fahrplan": [
+      "serie"
+    ],
+    "serien": [
+      "part_id",
+      "serie",
+      "status",
+      "termin"
+    ],
+    "serien_mw_anhang": [
+      "felder",
+      "flag",
+      "quellen",
+      "serie",
+      "stat_id",
+      "um_id"
+    ],
+    "standard_para": [
+      "go",
+      "gu",
+      "id",
+      "linie",
+      "para_id",
+      "pr_go",
+      "pr_gu",
+      "qc_go",
+      "qc_gu",
+      "satz",
+      "sollwert",
+      "stan_id",
+      "test",
+      "toleranz",
+      "um_id"
+    ],
+    "standardverwaltung": [
+      "bezeichnung",
+      "id",
+      "mw",
+      "nummer",
+      "obere_grenze",
+      "typ",
+      "untere_grenze"
+    ],
+    "stationen": [
+      "id",
+      "sgru_id",
+      "station"
+    ],
+    "teilproben": [
+      "end_faktor",
+      "faktor",
+      "faktor_wgh",
+      "prob_id",
+      "serie",
+      "um_id"
+    ],
+    "teilproben_anhang": [
+      "art",
+      "format",
+      "formelkuerzel",
+      "lnr",
+      "mw",
+      "mw_old",
+      "prob_id",
+      "rohw_id",
+      "um_id"
+    ],
+    "um_anhang": [
+      "einh_id",
+      "einh_ver_id",
+      "gegr_id",
+      "geme_id",
+      "id",
+      "lnr",
+      "marker",
+      "para_id",
+      "part_id",
+      "pm_id",
+      "pm_ver",
+      "um_id",
+      "vkd_id"
+    ],
+    "um_rohwerte": [
+      "formelkuerzel",
+      "lnr",
+      "rohw_id",
+      "um_id"
+    ],
+    "untersuchungsmethode": [
+      "id",
+      "kuerzel"
+    ],
+    "verfahrenskenndaten": [
+      "bg_arbeit",
+      "einh_id",
+      "gegr_id",
+      "geme_id",
+      "gera_id",
+      "id",
+      "lsta_id",
+      "nwg_arbeit",
+      "ogrenze",
+      "part_id",
+      "pm_id",
+      "pm_ver",
+      "um_id"
+    ]
+  },
+  "tabellen": [
+    "a_wasser",
+    "anwenderstammdaten",
+    "bew_teil",
+    "einheiten",
+    "ergebnisse",
+    "geraete_anhang",
+    "geraete_pruefungen",
+    "geraete_pruefungen_anhang",
+    "parameter",
+    "pm_wellen",
+    "proben",
+    "probenart",
+    "pruefmethoden",
+    "qp_serien",
+    "rohwertparameter",
+    "s_fahrplan",
+    "serien",
+    "serien_mw_anhang",
+    "standard_para",
+    "standardverwaltung",
+    "stationen",
+    "teilproben",
+    "teilproben_anhang",
+    "um_anhang",
+    "um_rohwerte",
+    "untersuchungsmethode",
+    "verfahrenskenndaten"
+  ]
+}
