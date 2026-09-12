@@ -32,7 +32,20 @@ def test_die_fachschicht_gibt_es_nur_einmal():
 
 
 def test_die_fachschicht_ist_unveraendert():
-    """Wortgleich mit dem Ursprungs-Repo, soweit es hier liegt."""
+    """Prüfsummen wie bei der Übernahme — läuft auch ohne Ursprungs-Repo.
+
+    Ohne diese Prüfung wäre „unverändert übernommen" eine Behauptung.
+    """
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+    import kern_abgleich
+
+    assert kern_abgleich.pruefen() == 0
+
+
+def test_die_fachschicht_stimmt_mit_dem_ursprung(capsys):
+    """Zusätzlich Byte für Byte, wenn das Ursprungs-Repo daneben liegt."""
     original = Path("/home/user/testlims")
     if not original.exists():
         pytest.skip("Ursprungs-Repo liegt in dieser Umgebung nicht daneben")

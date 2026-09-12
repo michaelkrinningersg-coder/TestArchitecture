@@ -22,5 +22,11 @@ Portierung nicht.
 Aktualisieren:
 
 ```bash
-python tools/kern_abgleich.py --pfad /pfad/zu/testlims
+python tools/kern_abgleich.py --pfad /pfad/zu/testlims --uebernehmen
 ```
+
+## Prüfsummen
+
+`PRUEFSUMMEN.txt` hält den Stand der Übernahme fest. `tools/kern_abgleich.py`
+prüft ohne Argumente dagegen, mit `--pfad` gegen ein danebenliegendes
+Ursprungs-Repo. Der Windows-Workflow prüft vor jedem Bau.

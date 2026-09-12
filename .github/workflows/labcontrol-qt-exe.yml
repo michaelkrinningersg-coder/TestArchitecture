@@ -50,25 +50,7 @@ jobs:
           pip install pytest "pyinstaller~=6.0"
 
       - name: Fachschicht auf Unversehrtheit prüfen
-        shell: pwsh
-        run: |
-          # Die Module unter labcontrol_qt/kern sind wörtlich aus dem
-          # Ursprungs-Repo übernommen. Wer sie hier ändert, lässt die beiden
-          # Oberflächen fachlich auseinanderlaufen.
-          python -c @"
-          import pathlib, sys
-          kern = pathlib.Path('labcontrol_qt/kern')
-          erwartet = {'config','dateien','laufkontext','lims_db','protokoll',
-                      'sitzung','verschleppung'}
-          da = {p.stem for p in kern.glob('*.py')} - {'__init__'}
-          fehlt = erwartet - da
-          if fehlt:
-              sys.exit(f'Fachschicht unvollstaendig: {sorted(fehlt)}')
-          zeilen = sum(len(p.read_text(encoding='utf-8', errors='replace')
-                           .splitlines()) for p in kern.glob('*.py')
-                       if p.stem in erwartet)
-          print(f'{len(erwartet)} Module, {zeilen} Zeilen Fachschicht.')
-          "@
+        run: python tools/kern_abgleich.py
 
       - name: Tests
         env:
