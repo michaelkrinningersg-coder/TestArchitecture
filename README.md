@@ -44,7 +44,8 @@ unter Windows eine einzelne Datei ohne Installation.
 ![LabControl](docs/screenshots/app_uebersicht.png)
 
 Die Ampel bewertet, ein Mensch entscheidet, der Prüfpfad hält beides fest —
-in dieser Reihenfolge, weil eine 17025-Nachweisführung genau das verlangt.
+in dieser Reihenfolge, weil eine Bewertung ohne festgehaltene Entscheidung
+später keine Auskunft mehr gibt.
 
 ## Was die Anwendung kann
 

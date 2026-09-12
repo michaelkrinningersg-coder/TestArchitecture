@@ -6,8 +6,30 @@
 |---|---|
 | **Variante 1**: neues LIMS, Oracle behalten | **Ja — und von allen Wegen der stärkste.** |
 | **Variante 1a**: unnötige Tabellen und Spalten droppen | **Nein.** Es ist nicht euer Schema — Begründung unten. |
-| **Variante 2**: SQLite, die Oberfläche als Rechtesystem | Als *Bedienkonzept* richtig. Als *Rechtesystem* nicht haltbar — ein Satz entscheidet das. |
+| **Variante 2**: SQLite, die Oberfläche als Rechtesystem | Als *Bedienkonzept* richtig. Als *Rechtesystem* trägt es technisch nicht — ob das hier reicht, ist eine Abwägung, keine Vorschrift. |
 | „In `ERGEBNISSE` bräuchte man viel weniger Spalten" | **Gemessen: 27 von 81.** Du liegst richtig. |
+
+> **Berichtigt am 12.09.2026.** Frühere Fassungen dieses und der anderen
+> Dokumente haben mit einer „17025-Nachweisführung" argumentiert. Das war
+> **meine Annahme, nicht euer Stand** — die NW-FVA ist nicht nach ISO/IEC 17025
+> akkreditiert, und im Quelltext kommt 17025 an keiner Stelle vor; ich habe es
+> nachgesehen. Nachgeprüft habe ich auch, was stattdessen dasteht: eine
+> **Qualitätsprüfung** aus 24 Modulen und 13 028 Zeilen (Bilanzen für N, C, P,
+> S und NaCl, Kontrollproben, Wiederholungen, Toleranzen, Nachmessungen), die
+> ihr Urteil samt Kommentar in `BEW_TEIL` schreibt — und ein `protokoll.py`,
+> das jede verändernde Anweisung mitschreibt, mit dieser Begründung:
+>
+> > „Ein Export schreibt in die Ergebnisse eines Labors, das seine Zahlen
+> > zwanzig Jahre aufhebt. Wenn spaeter jemand fragt, woher ein Wert kommt, ist
+> > die Antwort ‚LabControl hat ihn geschrieben' keine Auskunft."
+>
+> Darauf stützen sich die Empfehlungen jetzt. **Was sich dadurch geändert hat:**
+> aus „steht nicht zur Wahl" ist „ist eure Abwägung" geworden, und die
+> vollständige Rechtemaschinerie in Schritt 3 ist eine Möglichkeit statt einer
+> Pflicht. **Was sich nicht geändert hat:** die Messungen, die 27 von 456
+> Tabellen, das Argument gegen das Löschen im Fremdschema — und der harte Grund
+> gegen eine geteilte SQLite-Datei im Netz, denn eine beschädigte Datei ist
+> kein Nachweisproblem, sondern Datenverlust.
 
 ## Der Befund, der alles davor rückt: das LIMS ist ein Produkt
 
@@ -36,8 +58,10 @@ Zwei Folgerungen, und beide sind wichtiger als jede Syntaxfrage:
    aus `BL_MASKFIELDS` und nicht aus den daraus erzeugten Triggern. Die
    Bestandsanwendung zeigt dann auf etwas, das es nicht mehr gibt.
 2. **Euer Rechtesystem hängt heute an `BLUAD_*`.** Wer eine neue Oberfläche
-   baut, ersetzt das mit — und genau das ist die 17025-Frage aus
-   [sqlite-neues-lims.md](sqlite-neues-lims.md), nur von der anderen Seite.
+   baut, ersetzt das mit. Das ist die Frage aus
+   [sqlite-neues-lims.md](sqlite-neues-lims.md) von der anderen Seite: was heute
+   dafür sorgt, dass nicht jeder alles ändern kann, ist Teil des Produkts —
+   nicht Teil eurer Anwendung.
 
 ## Variante 1 — Oracle behalten
 
@@ -110,10 +134,11 @@ Fünf Gründe, in der Reihenfolge ihres Gewichts:
    anmelden. Dazu `AQS_*` (6), `RECH_*` (6), `LABORBUCH_*` (6), `AN_*` (5),
    `KO_*` (5). Was für *deine* Oberfläche unnötig ist, ist woanders die
    Tagesarbeit.
-3. **17025 und Aufbewahrung.** In den Tabellen stehen Aufzeichnungen, die
-   aufzubewahren sind. `DROP TABLE` ist deren Vernichtung, und ein
-   `DROP COLUMN` auf `ERGEBNISSE` ist an der Stelle nicht rückholbar. Das ist
-   kein technisches, sondern ein Nachweisproblem.
+3. **Aufbewahrung.** In den Tabellen stehen Messwerte eines Labors, das seine
+   Zahlen nach eigener Angabe **zwanzig Jahre** aufhebt (`protokoll.py`).
+   `DROP TABLE` ist deren Vernichtung, und ein `DROP COLUMN` auf `ERGEBNISSE`
+   ist an der Stelle nicht rückholbar. Eine verbrauchte Probe misst man nicht
+   noch einmal.
 4. **Habt ihr die Rechte überhaupt?** Euer README verlangt für Änderungen
    ausdrücklich `UPDATE`-Recht. `DROP`/`ALTER` im LIMS-Schema ist eine andere
    Stufe. Wenn euer Anmeldekonto das kann, ist *das* schon einen Blick wert.
@@ -217,9 +242,13 @@ Und es braucht dafür nichts: kein Adminrecht, kein installiertes Python.
 *DB Browser for SQLite* ist eine tragbare EXE. Gemessen hat es drei Zeilen
 gebraucht, siehe [sqlite-neues-lims.md](sqlite-neues-lims.md#4-benutzerrechte-nein--und-auch-nicht-später).
 
-Für eine 17025-Nachweisführung ist die Frage ohnehin nicht „würde jemand das
-tun?", sondern „zeigen Sie mir die Maßnahme". *„Unsere Oberfläche hat den Knopf
-nicht"* ist keine.
+Ob das reicht, ist **eure Entscheidung** — eine Vorschrift, die es verbietet,
+gibt es bei euch nicht. Was dagegen spricht, ist praktisch: ein Kollege, der in
+*DB Browser* „nur schnell etwas richtigstellt", eine Datei, die beim Kopieren
+halb geschrieben wird, ein Urteil der Qualitätsprüfung in `BEW_TEIL`, das sich
+ändert, ohne dass es jemand sehen kann. Euer eigenes `protokoll.py` nennt den
+Grund, warum das zählt: „Wenn spaeter jemand fragt, woher ein Wert kommt, ist
+die Antwort ‚LabControl hat ihn geschrieben' keine Auskunft."
 
 ### Wo der Gedanke trägt
 
@@ -246,8 +275,9 @@ Weg zur Datei.
 **Variante 1, in der Form „eigenes Schema neben dem LIMS".** Das ist von allen
 bisher betrachteten Wegen der stärkste, und zwar aus vier Gründen:
 
-* Die Rechte kommen von Oracle, nicht von der Oberfläche — das ist der Punkt,
-  an dem SQLite ausscheidet und an dem 17025 entschieden wird.
+* Die Rechte kommen von Oracle, nicht von der Oberfläche — und sie kosten
+  nichts extra, weil sie schon da sind. Das ist der Punkt, an dem SQLite für
+  eine geteilte Ablage ausscheidet.
 * Nichts wird gelöscht. Das Bestandssystem bleibt heil, und der Weg zurück
   bleibt offen.
 * Der Bedarf ist gemessen **2,8 %** der Datenbank. Das Datenmodell des neuen
@@ -427,8 +457,15 @@ Kosten dieses Beweises: ein paar `CREATE VIEW`. Risiko für den Bestand: keins.
 
 Ab hier geht es nicht mehr um das alte LIMS, sondern um das, was das neue
 besitzt. Zwei Tabellen sind der Kern, und beide haben eine Eigenschaft, die
-`ERGEBNISSE` nicht haben kann: **sie gehören dir**, also darfst du sie so
-bauen, wie 17025 es braucht.
+`ERGEBNISSE` nicht haben kann: **sie gehören dir**, also darfst du sie so bauen,
+dass sie später Auskunft geben.
+
+> **Wie viel davon nötig ist, entscheidest du.** Das Folgende ist die
+> vollständige Fassung. Wer weniger will, lässt die Rechte je Spalte und den
+> Trigger weg und behält nur die zwei Tabellen mit `NOT NULL` und `CHECK` — das
+> ist schon der größte Teil des Nutzens für einen Bruchteil des Aufwands. Die
+> vollständige Fassung lohnt sich dort, wo eine Zahl später jemandem gegenüber
+> begründet werden muss.
 
 ### Der Prüfpfad
 
@@ -540,13 +577,14 @@ selbst*:
 > Alltag niemand benutzt, und die Anwendung meldet sich als
 > `labor_arbeiten` an.
 
-### Warum genau das die 17025-Antwort ist
+### Was das praktisch ändert
 
 Halte es gegen die Messung aus [Variante 2](#variante-2--sqlite-die-oberfläche-als-rechtesystem):
 dort haben drei Zeilen Python die Tabelle gelöscht, und es gab keine
 Einstellung, die das verhindert hätte. Hier kann selbst der Eigentümer eine
 Prüfpfadzeile nicht ändern, und die Rolle der Anwendung kann nur anhängen.
 
-Das ist der Unterschied zwischen „unsere Oberfläche hat den Knopf nicht" und
-einer Maßnahme, die man vorzeigen kann — und `db_benutzer DEFAULT USER`
-liefert dazu die Angabe, die kein Programm fälschen kann.
+Der Nutzen ist nicht, etwas vorzeigen zu können — es ist die Antwort auf die
+Frage, die in eurem Labor ohnehin irgendwann kommt: *woher kommt dieser Wert,
+und wer hat ihn wann geändert?* `db_benutzer DEFAULT USER` liefert dazu die
+Angabe, die kein Programm fälschen kann, weil die Datenbank sie setzt.

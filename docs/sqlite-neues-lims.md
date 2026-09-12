@@ -18,6 +18,12 @@ dazujoint, und die Abfragen selbst wörtlich aus `lims_db.py` — nur `:name` au
 Ein Lauf ist wie bei euch **300 Proben × 20 Parameter = 6 000 Zeilen**; die
 Zahl steht in `lims_db.py` als Begründung für `EXPORT_BUENDEL`.
 
+> **Berichtigt am 12.09.2026:** frühere Fassungen haben mit einer
+> „17025-Nachweisführung" argumentiert — das war meine Annahme, nicht euer
+> Stand. Die Begründungen stützen sich jetzt auf euren tatsächlichen Rahmen
+> (Qualitätsprüfung, `protokoll.py`, zwanzig Jahre Aufbewahrung); Einzelheiten
+> in [varianten.md](varianten.md). An den Messungen ändert das nichts.
+
 > Gemessen auf 4 Kernen, 16 GB RAM, lokaler SSD, SQLite 3.45.1, Python 3.11.
 > **Eine lokale SSD.** Was auf `G:` passiert, steht in Abschnitt 5 — und ist
 > der eigentliche Punkt.
@@ -287,9 +293,15 @@ gibt es dort nicht.
 SQLite ist eine Bibliothek im Programm, kein Dienst zwischen Benutzer und
 Daten. Wer die Datei öffnen kann, *ist* die Datenbank. Ein Rechtesystem
 verlangt eine Instanz, die zwischen Benutzer und Datei sitzt und nicht umgangen
-werden kann — und genau das ist der Unterschied zu PostgreSQL und Oracle. Für
-eine 17025-Nachweisführung („wer durfte was, und woran sieht man das") ist das
-der Punkt, an dem die Entscheidung fällt.
+werden kann — und genau das ist der Unterschied zu PostgreSQL und Oracle.
+
+Was daran hängt, ist keine Vorschrift, sondern eine Frage: **wenn ein Messwert
+oder ein Urteil der Qualitätsprüfung sich ändert, woran sieht man das?** Euer
+eigenes `protokoll.py` beantwortet sie und begründet sie gleich mit: „Ein Export
+schreibt in die Ergebnisse eines Labors, das seine Zahlen zwanzig Jahre aufhebt.
+Wenn spaeter jemand fragt, woher ein Wert kommt, ist die Antwort ‚LabControl hat
+ihn geschrieben' keine Auskunft." Genau diese Auskunft gibt eine Ablage nicht
+mehr, in der jeder alles ändern kann.
 
 ## 5. Der eigentliche Engpass: ein Schreiber
 
@@ -390,7 +402,8 @@ Vorgänge, und keine Möglichkeit mehr, die Datei lokal zu halten.
 
 Damit fällt die Entscheidung nicht enger, sondern deutlicher aus: **PostgreSQL.**
 
-Eine Sache wird dabei allerdings *besser*, und sie ist für 17025 wichtig: heute
+Eine Sache wird dabei allerdings *besser*, und sie ist für die
+Nachvollziehbarkeit wichtig: heute
 kann LabControl keinen vollständigen Prüfpfad über eine Ergebniszeile führen,
 weil sie ihm nicht gehört — es sieht nur, was leer war, und schreibt hinein. In
 einem eigenen Datenmodell gehört die Zeile von Anfang an dazu, und dann ist
@@ -574,10 +587,16 @@ mit PostgreSQL arbeitet, schreibt Mengen, nicht Zeilen.
 ## 8. Empfehlung
 
 **Für ein neues LIMS, auf das mehrere Arbeitsplätze schreiben: PostgreSQL.**
-Nicht wegen der Datenmenge — die trägt SQLite dreifach —, sondern wegen der
-zwei Dinge, die sich nicht nachrüsten lassen: Rechte je Tabelle und Benutzer,
-und mehrere Schreiber ohne geteilte Datei im Netz. Beides steht bei einer
-17025-Nachweisführung nicht zur Wahl.
+Nicht wegen der Datenmenge — die trägt SQLite dreifach —, sondern in dieser
+Reihenfolge:
+
+1. **Mehrere Schreiber auf einer geteilten Datei im Netz.** Das ist der harte
+   Grund, und er hat mit Vorschriften nichts zu tun: SQLite sagt selbst, dass
+   fehlerhafte Sperren auf Netzdateisystemen zu einer **beschädigten Datei**
+   führen können, und WAL funktioniert dort gar nicht. Messwerte sind teuer;
+   eine verbrauchte Probe misst man nicht nachträglich noch einmal.
+2. **Rechte je Tabelle und Benutzer.** Nachrüsten lässt sich das nicht, und es
+   kostet bei PostgreSQL nichts extra — man hat es einfach.
 
 **SQLite bleibt trotzdem auf dem Zettel, an drei Stellen:**
 

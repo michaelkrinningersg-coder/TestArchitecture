@@ -249,6 +249,6 @@ def show_about(parent, database: str) -> None:
     QMessageBox.about(
         parent, "Über LabControl",
         f"<h3>LabControl {__version__}</h3>"
-        "<p>Freigabe von Laborproben mit Prüfpfad nach ISO/IEC 17025.</p>"
+        "<p>Freigabe von Laborproben mit fortschreibendem Prüfpfad.</p>"
         f"<p><b>Qt</b> {qVersion()} · <b>PySide6</b> {pyside_version}</p>"
         f"<p><b>Datenbank</b><br><code>{database}</code></p>")

@@ -220,7 +220,7 @@ Der letzte Punkt ist der interessante, und er fällt anders aus als erwartet:
 
 Der Vorsprung der Web-Variante bei der Prüfbarkeit ist damit real, aber kleiner
 als er wirkt — und er verschiebt sich, sobald der Fachkern geteilt ist: was für
-eine 17025-Nachweisführung zählt, sind die Ampelregeln, und die liegen in
+die Nachvollziehbarkeit zählt, sind die Ampelregeln, und die liegen in
 `core/model.py`, werden einmal geprüft und gelten für alle drei Varianten. Was
 oberflächenspezifisch bleibt, ist die Anbindung.
 
@@ -231,8 +231,8 @@ oberflächenspezifisch bleibt, ist die Anbindung.
   kommen im Alltag dazu.
 * **Echte Grafikhardware.** Xvfb und der Offscreen-Backend rastern auf der CPU.
   Absolutwerte sind pessimistisch, die Skalierung ist es nicht.
-* **Bearbeiten, Speichern, Mehrbenutzerbetrieb, Rechte, Audit-Trail.** Alle drei
-  Varianten sind reine Leseansichten. Für 17025 fehlt der ganze schreibende Teil,
+* **Bearbeiten, Speichern, Mehrbenutzerbetrieb, Rechte, Prüfpfad.** Alle drei
+  Varianten sind reine Leseansichten. Der ganze schreibende Teil fehlt,
   und dort liegen die Unterschiede zwischen Desktop und Web ganz woanders
   (Sperren, Transaktionen, Signaturen).
 * **Verteilung und Betrieb.** Ein Qt-Programm muss auf jeden Rechner, eine

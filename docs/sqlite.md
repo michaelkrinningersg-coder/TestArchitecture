@@ -100,7 +100,10 @@ Die Gründe sind andere, und sie stehen alle im Code:
 * **Keine Benutzerrechte.** Oracle unterscheidet Lese- und Schreibrecht je
   Tabelle und Benutzer; euer README verlangt für Änderungen ausdrücklich
   `UPDATE`-Recht. SQLite kennt keine Benutzer: wer die Datei lesen darf, darf
-  alles ändern. Für eine 17025-Nachweisführung ist das schwer zu verteidigen.
+  alles ändern — auch ein Urteil der Qualitätsprüfung in `BEW_TEIL`, und zwar
+  ohne Spur. Warum das zählt, sagt euer eigenes `protokoll.py`: „Ein Export
+  schreibt in die Ergebnisse eines Labors, das seine Zahlen zwanzig Jahre
+  aufhebt."
 
 ### B — SQLite als lesender Spiegel der Stammdaten: möglich, aber nur bei Bedarf
 
