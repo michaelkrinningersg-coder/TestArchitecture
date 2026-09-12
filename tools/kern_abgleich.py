@@ -27,7 +27,16 @@ MODULE = ("config", "dateien", "laufkontext", "lims_db", "protokoll",
 
 
 def summe(pfad: Path) -> str:
-    return hashlib.sha256(pfad.read_bytes()).hexdigest()
+    """SHA256 über den Inhalt, Zeilenenden vereinheitlicht.
+
+    Ein Auschecken unter Windows macht aus LF gern CRLF. Das ist eine
+    Konvention des Arbeitsplatzes und keine Änderung am Modul — ohne diese
+    Vereinheitlichung meldete die Prüfung dort alle sieben Dateien als
+    abweichend. Dass die Bytes trotzdem gleich bleiben, regelt
+    ``.gitattributes``; diese Vereinheitlichung ist der Gürtel dazu.
+    """
+    return hashlib.sha256(
+        pfad.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def schreiben() -> int:

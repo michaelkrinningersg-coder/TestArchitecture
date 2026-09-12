@@ -1,0 +1,4 @@
+# Die übernommene Fachschicht bleibt Byte für Byte, wie sie im Ursprungs-Repo
+# steht — auch beim Auschecken unter Windows. Ohne das wandelt git die
+# Zeilenenden in CRLF, und "unverändert übernommen" stimmt nicht mehr.
+labcontrol_qt/kern/*.py -text
