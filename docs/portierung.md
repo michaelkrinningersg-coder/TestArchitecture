@@ -150,6 +150,22 @@ Ursprungs-Repo und wird von hier erneut übernommen — sonst laufen die beiden
 Oberflächen fachlich auseinander, und genau das soll eine Portierung nicht.
 Ein Test wacht darüber (`test_die_fachschicht_ist_unveraendert`).
 
+## Windows-EXE
+
+Der Workflow
+[`labcontrol-qt-exe.yml`](../.github/workflows/labcontrol-qt-exe.yml) baut die
+Portierung zu einer einzelnen Datei und hängt sie als Artefakt
+`LabControl-Qt6-windows-x64` an den Lauf. Erster erfolgreicher Lauf:
+[#4](https://github.com/michaelkrinningersg-coder/TestArchitecture/actions/runs/34703972226),
+2:15 Minuten, 54 MB gepackt.
+
+Vor dem Bau prüft er die Prüfsummen der Fachschicht, danach startet er die
+fertige EXE mit `--selftest`. Bricht das ab, gibt es kein Artefakt.
+
+**Die EXE erreicht die Oracle 11.2 nicht** — siehe oben. Zum Ansehen der
+Oberfläche taugt sie (`--demo`), zum Arbeiten erst, wenn einer der vier Wege
+gegangen ist.
+
 ## Starten und prüfen
 
 ```bash
