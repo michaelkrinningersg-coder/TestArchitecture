@@ -3,11 +3,12 @@
 Drei Dinge liegen hier, in der Reihenfolge ihrer Entstehung:
 
 1. **[Qt6-Portierung der echten LabControl-Anwendung](docs/portierung.md)** aus
-   dem Repo *testlims* — `labcontrol_qt/`. Der aktuelle Stand: Anmeldung,
-   Bearbeiten-Reiter und die Reiter Laufdatei und Laufkontext laufen auf der
-   unveränderten Fachschicht. **Bevor daran weitergebaut wird, ist eine Frage
-   zu klären: die Portierung schneidet den Weg zur Oracle 11.2 ab** — Qt 6
-   gibt es nicht für 32 Bit, der Thick-Mode-Client aber nur.
+   dem Repo *testlims* — `labcontrol_qt/`. Anmeldung, Bearbeiten-Reiter und die
+   Reiter Laufdatei und Laufkontext laufen auf der unveränderten Fachschicht.
+   **Ruht vorerst:** Qt 6 gibt es nicht für 32-bit-Windows, und darauf laufen
+   die Arbeitsplätze. Weitergebaut wird, sobald sie auf 64 Bit sind — die
+   [Portierungsnotiz](docs/portierung.md) hält Entscheidung, Beleg und die
+   drei Schritte zum Wiederaufnehmen fest.
 2. **Eine kleine Beispielanwendung** gleichen Namens (`labcontrol/`) — unten
    beschrieben. Sie ist Eigenbau aus dem Variantenvergleich, nicht die echte
    LabControl.

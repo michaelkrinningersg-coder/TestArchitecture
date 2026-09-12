@@ -4,9 +4,59 @@ Portiert wird die Anwendung aus
 [michaelkrinningersg-coder/testlims](https://github.com/michaelkrinningersg-coder/testlims).
 Der Code liegt hier unter [`labcontrol_qt/`](../labcontrol_qt).
 
-## Zuerst: die Portierung schneidet den Weg zur Datenbank ab
+## Entscheidung: vorerst bei Tkinter bleiben
 
-Das ist kein Detail, sondern die Frage, ob sich der Umbau überhaupt lohnt.
+**Stand 12.09.2026.** Die Arbeitsplätze laufen auf 32-bit-Windows, und für
+32-bit gibt es Qt 6 nicht (Beleg unten). Damit ist die Portierung heute nicht
+einsetzbar — nicht schwierig, sondern unmöglich. Das Original bleibt in
+Betrieb.
+
+Zwei Änderungen sind angekündigt und heben je eine Hälfte des Hindernisses auf:
+
+| Voraussetzung | Was sie löst |
+|---|---|
+| Oracle-Update auf 12.1 oder neuer | Der Thin Mode reicht, kein Oracle-Client mehr nötig |
+| Arbeitsplätze auf 64-bit-Windows | Qt 6 läuft überhaupt erst |
+
+**Nötig ist nur die zweite.** Mit 64-bit-Windows genügt schon ein 64-bit
+Oracle-Client (19c erreicht die 11.2 noch), das Datenbank-Update ist dann
+Zugabe. Sind beide da, entfällt die Client-Frage ganz.
+
+### Wenn es soweit ist
+
+1. Fachschicht frisch nachziehen — sie hat sich im Ursprungs-Repo
+   inzwischen weiterentwickelt:
+   `python tools/kern_abgleich.py --pfad /pfad/zu/testlims --uebernehmen`
+2. `python -m labcontrol_qt` gegen die echte Datenbank starten und den
+   Bearbeiten-Reiter gegen das Original halten.
+3. Weiter nach der Modultabelle unten. Der nächste sinnvolle Schritt sind die
+   Auswertungsreiter des Messfensters, weil dort der Nutzen sitzt: farbige
+   Einzelzellen und große Tabellen.
+
+Bis dahin braucht das Portierte keine Pflege. Es liegt vollständig, getestet
+und gebaut da und wartet; nur die Fachschicht in `kern/` altert gegenüber dem
+Ursprung — deshalb Schritt 1.
+
+### Der Beleg, damit ihn niemand noch einmal erheben muss
+
+Aus den Metadaten von PyPI, Stand 12.09.2026:
+
+| Paket | 32-bit-Windows (`win32`) |
+|---|---|
+| PySide6 6.11.2 | **nein** — nur `win_amd64`, `win_arm64` |
+| PyQt6 6.11.0 | **nein** — nur `win_amd64`, `win_arm64` |
+| PyQt5 5.15.11 | ja — `cp38-abi3-win32.whl`, ab Python 3.8 |
+| PySide2 5.15.2.1 | ja, aber nur bis Python 3.10 |
+| oracledb 3.4.2 | ja — `win32` ab cp39 |
+
+Qt hat 32-bit-Windows mit Qt 6 gestrichen; beide Bindings folgen dem. Der
+Umweg über **Qt 5** wäre technisch möglich, ist aber verworfen: 18 000 Zeilen
+auf einen Unterbau umzubauen, dessen Open-Source-Pflege 2023 endete, lohnt
+den Aufwand nicht.
+
+## Warum: die Portierung schneidet heute den Weg zur Datenbank ab
+
+Der lange Grund hinter der Entscheidung oben.
 
 Die LIMS-Datenbank der NW-FVA ist eine **Oracle 11.2**. Der Thin Mode von
 python-oracledb spricht erst mit 12.1 — im Quelltext steht das ausdrücklich:
