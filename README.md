@@ -15,6 +15,11 @@ Drei Dinge liegen hier, in der Reihenfolge ihrer Entstehung:
 3. **Der [Variantenvergleich](docs/vergleich.md)** Qt / Tkinter / Web, mit dem
    die Frage anfing.
 
+Dazu eine Untersuchung ohne Code: **[Wäre SQLite für das LIMS
+möglich?](docs/sqlite.md)** — das SQL aus `lims_db.py` gegen SQLite gehalten
+(30 von 30 vollständigen Abfragen laufen nach einer Ersetzung) und vier Lesarten
+der Frage getrennt beantwortet.
+
 ---
 
 # LabControl (Beispielanwendung)
