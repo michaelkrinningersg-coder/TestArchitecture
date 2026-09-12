@@ -268,11 +268,285 @@ unter der eines Herstellers.
    `all_tab_columns` aus dem Kopf von [`docs/sichten.sql`](sichten.sql). Damit
    steht das Datenmodell auf Tatsachen statt auf meiner Textauswertung.
 2. **Ein eigenes Schema anlegen und die Sichten hineinlegen.** Nichts am
-   Bestand. Danach einmal gegen die Sichten lesen und prüfen, ob LabControl
-   damit auskommt — das ist der Beweis, dass 2,8 % reichen.
-3. **Die eigenen Tabellen dazu**: Prüfpfad, Freigaben, was das neue LIMS
-   selbst besitzt. Mit `GRANT` je Tabelle, wie in
-   [sqlite-neues-lims.md](sqlite-neues-lims.md#7-postgresql) vorgeführt — in
-   Oracle heißt es genauso.
+   Bestand. Danach das heutige LabControl gegen das neue Schema anmelden — das
+   ist der Beweis, dass 2,8 % reichen, und er kostet ein paar `CREATE VIEW`.
+   Einzelheiten oben unter *Schritt 2 im Einzelnen*.
+3. **Die eigenen Tabellen dazu**: Prüfpfad und Freigabe, mit `GRANT` je
+   Tabelle und einem Riegel, der auch für den Eigentümer gilt. DDL und Vorführung
+   oben unter *Schritt 3 im Einzelnen*.
 4. **Erst dann die Oberfläche**, und erst dann die Frage Tkinter oder Qt 6 —
    die hängt am Oracle-Update, nicht am Datenmodell.
+
+## Schritt 2 im Einzelnen: die Sicht daneben
+
+### Warum das ohne eine Zeile Codeänderung geht
+
+Der Grund steht in eurem eigenen Quelltext, und ich habe ihn nachgezählt:
+
+```
+Tabellen in FROM/JOIN in lims_db.py:   117 ohne Schemapräfix,  0 mit
+```
+
+Und der Kommentar direkt darüber sagt, was das bedeutet:
+
+> „Die Tabellen werden ohne Schemapraefix angesprochen; sie liegen im Schema
+> des angemeldeten Benutzers oder sind ueber Synonyme erreichbar."
+
+Daraus folgt der ganze Trick. Ein unqualifiziertes `FROM ergebnisse` löst
+Oracle **im Schema des angemeldeten Benutzers** auf. Legt man also ein eigenes
+Schema an, in dem ein Objekt namens `ERGEBNISSE` liegt — und zwar eine *Sicht*
+auf `LIMSADMIN.ERGEBNISSE` mit nur den 27 gebrauchten Spalten —, dann liest
+**dieselbe Abfrage**, Wort für Wort unverändert, die Sicht statt der Tabelle.
+Umgeschaltet wird über die Anmeldung oder über eine Zeile:
+
+```sql
+ALTER SESSION SET CURRENT_SCHEMA = neues_lims;
+```
+
+### Vorgeführt
+
+[`tools/projektion_demo.py`](../tools/projektion_demo.py) baut genau das auf
+und lässt dieselbe Abfrage zweimal laufen:
+
+```
+== Schritt 2: die Sicht daneben, nichts am Bestand
+   limsadmin.ergebnisse hat 81 Spalten (wie im echten LIMS)
+   neues_lims.ergebnisse hat 27 Spalten (27/81 = 33 %)
+   Am Bestand geändert: nichts — CREATE VIEW, kein DROP, kein ALTER
+
+   Dieselbe Abfrage, zweimal, Wort für Wort gleich:
+     search_path=limsadmin   -> ([1, '2026P0000001', '2026W052', 1.5, 1.5],)   (SELECT * liefert 81 Spalten)
+     search_path=neues_lims  -> ([1, '2026P0000001', '2026W052', 1.5, 1.5],)   (SELECT * liefert 27 Spalten)
+
+   Rolle neu_lesen: nur SELECT auf die Sicht, nichts auf limsadmin
+     Sicht lesen        -> 1
+     Tabelle darunter   -> permission denied for schema limsadmin
+     Sicht ändern       -> permission denied for view ergebnisse
+```
+
+Dieselbe Abfrage, dasselbe Ergebnis — aber `SELECT *` liefert einmal 81 und
+einmal 27 Spalten. Und die Rolle, die nur die Sicht darf, kommt an die Tabelle
+darunter nicht heran.
+
+> **Vorgeführt auf PostgreSQL 16**, weil hier kein Oracle 11.2 steht. Der
+> Mechanismus ist derselbe, nur die Namen unterscheiden sich:
+>
+> | | PostgreSQL | Oracle |
+> |---|---|---|
+> | Schema anlegen | `CREATE SCHEMA` | `CREATE USER` — ein Schema *ist* ein Benutzer |
+> | Auflösung umschalten | `SET search_path = …` | `ALTER SESSION SET CURRENT_SCHEMA = …` |
+> | Fehler auslösen | `RAISE EXCEPTION` | `RAISE_APPLICATION_ERROR` |
+> | Zähler | `GENERATED AS IDENTITY` | dito ab 12c — **in 11.2: Sequenz + Trigger** |
+
+### Das SQL, das der DBA einmal ausführt
+
+```sql
+-- 1. Das eigene Schema. In Oracle ist ein Schema ein Benutzer.
+CREATE USER neues_lims IDENTIFIED BY "…";
+GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW, CREATE SYNONYM,
+      CREATE SEQUENCE, CREATE TRIGGER TO neues_lims;
+ALTER USER neues_lims QUOTA 500M ON <tablespace>;
+
+-- 2. Lesen auf die 27 Tabellen. Direkt an den BENUTZER, mit GRANT OPTION —
+--    warum, steht unten.
+GRANT SELECT ON limsadmin.ergebnisse TO neues_lims WITH GRANT OPTION;
+GRANT SELECT ON limsadmin.proben     TO neues_lims WITH GRANT OPTION;
+--    … die übrigen 25 analog, Liste im Kopf von docs/sichten.sql
+
+-- 3. Schreiben NUR dort, wo LabControl wirklich schreibt — sechs Tabellen,
+--    ausgezählt aus jeder UPDATE/INSERT/DELETE-Anweisung in lims_db.py:
+GRANT UPDATE                 ON limsadmin.ergebnisse        TO neues_lims;
+GRANT UPDATE                 ON limsadmin.proben            TO neues_lims;
+GRANT UPDATE                 ON limsadmin.standard_para     TO neues_lims;
+GRANT UPDATE                 ON limsadmin.teilproben_anhang TO neues_lims;
+GRANT UPDATE, INSERT         ON limsadmin.bew_teil          TO neues_lims;
+GRANT UPDATE, INSERT, DELETE ON limsadmin.serien_mw_anhang  TO neues_lims;
+```
+
+> **Achtung, hier weicht die Doku vom Code ab.** `LIMS-Tabellen.md` sagt
+> „Geschrieben wird in genau vier davon". Ausgezählt sind es **sechs**: dazu
+> kommen `PROBEN` (die Bemerkung einer Probe, `UPDATE proben SET bemerkung`)
+> und `TEILPROBEN_ANHANG` (`UPDATE teilproben_anhang SET mw_old = mw, mw = …`).
+> Wer nach der Doku grantet, bekommt beim ersten Bemerkungstext ein
+> `ORA-01031: insufficient privileges`.
+
+Danach, angemeldet als `neues_lims`, die fertige Datei:
+
+```sql
+@docs/sichten.sql
+```
+
+### Drei Oracle-Fallen, die genau hier zuschlagen
+
+**1. `WITH GRANT OPTION` ist nicht optional.** Wer über eine Sicht Rechte
+weitergeben will, braucht das Recht auf der Basistabelle *mit* Grant-Option.
+Oracle sagt das wörtlich:
+
+> „To grant SELECT on a view to another user, either you must own all of the
+> objects underlying the view or you must have been granted the SELECT object
+> privilege WITH GRANT OPTION on all of those underlying objects. **This is
+> true even if the grantee already has SELECT privileges on those underlying
+> objects.**"
+
+Ohne das lässt sich `GRANT SELECT ON v_ergebnisse TO labor_lesen` nicht
+ausführen — und man merkt es erst, wenn die Sichten schon stehen.
+
+**2. Rechte über eine Rolle zählen nicht.** Eine Sicht ist ein Objekt mit
+Definer-Rechten; zum Übersetzen braucht sie **direkte** Grants auf die
+Basistabellen. Wenn euer heutiges Anmeldekonto seine Rechte über eine Rolle
+hat — der Normalfall —, kann es damit keine Sicht auf `LIMSADMIN` anlegen.
+Oracle hat dazu eine passende Einschränkung: „You can specify WITH GRANT
+OPTION only when granting to a user or to PUBLIC, **not when granting to a
+role**." Also: direkt an den Benutzer `neues_lims`, nicht an eine Rolle.
+
+**3. Eine Sicht ist keine Mauer, sondern ein Ausschnitt.** Eine einfache
+Projektionssicht auf eine Tabelle ist in Oracle **änderbar** — wer `UPDATE` auf
+die Sicht hat, schreibt in die Tabelle darunter. Die Schranke ist nicht die
+Sicht, sondern das `GRANT`. Deshalb sind Schritt 2 und 3 zwei Schritte: die
+Sicht regelt, *was man sieht*, der Grant regelt, *was man darf*.
+
+*Kein* Problem ist dagegen die Geschwindigkeit: Oracle löst einfache Sichten
+beim Optimieren in die Abfrage hinein auf (View Merging), die Ausführungs­pläne
+sind dieselben. Und wo du die volle Breite brauchst, nimm statt einer Sicht ein
+Synonym — `CREATE SYNONYM ergebnisse FOR limsadmin.ergebnisse` — das ist die
+zweite Hälfte desselben Satzes aus eurem Kommentar.
+
+### Was Schritt 2 an sich schon beweist
+
+Das ist der eigentliche Wert dieses Schritts: **du kannst ihn ausführen, bevor
+du eine Zeile neuen Code schreibst.** Sichten anlegen, das heutige LabControl
+gegen das neue Schema anmelden, und einmal normal arbeiten. Läuft es durch,
+dann ist bewiesen, dass 27 Tabellen und 168 Spalten reichen — nicht berechnet,
+sondern vorgeführt. Läuft etwas nicht, sagt die Fehlermeldung genau, welche
+Spalte in meiner Auswertung fehlt (sie ist eine Untergrenze, siehe oben), und
+du ergänzt eine Zeile in der Sicht.
+
+Kosten dieses Beweises: ein paar `CREATE VIEW`. Risiko für den Bestand: keins.
+
+## Schritt 3 im Einzelnen: die eigenen Tabellen
+
+Ab hier geht es nicht mehr um das alte LIMS, sondern um das, was das neue
+besitzt. Zwei Tabellen sind der Kern, und beide haben eine Eigenschaft, die
+`ERGEBNISSE` nicht haben kann: **sie gehören dir**, also darfst du sie so
+bauen, wie 17025 es braucht.
+
+### Der Prüfpfad
+
+```sql
+-- Oracle 11.2: Zähler über Sequenz + Trigger, Identity gibt es erst ab 12c.
+CREATE SEQUENCE pruefpfad_nr;
+
+CREATE TABLE pruefpfad (
+  id           NUMBER(18)    NOT NULL PRIMARY KEY,
+  wann         TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+  db_benutzer  VARCHAR2(30)  DEFAULT USER NOT NULL,   -- wer an der Datenbank
+  wer          VARCHAR2(64)  NOT NULL,                -- wer in der Anwendung
+  tabelle      VARCHAR2(30)  NOT NULL,
+  schluessel   VARCHAR2(200) NOT NULL,                -- welche Zeile
+  feld         VARCHAR2(30),
+  alt_wert     VARCHAR2(400),
+  neu_wert     VARCHAR2(400),
+  grund        VARCHAR2(400) NOT NULL,
+  CONSTRAINT grund_nicht_leer CHECK (TRIM(grund) IS NOT NULL));
+
+CREATE OR REPLACE TRIGGER pruefpfad_nummer
+  BEFORE INSERT ON pruefpfad FOR EACH ROW
+BEGIN
+  IF :new.id IS NULL THEN
+    SELECT pruefpfad_nr.NEXTVAL INTO :new.id FROM dual;
+  END IF;
+END;
+```
+
+Drei Dinge daran sind Absicht:
+
+* **`db_benutzer DEFAULT USER`** — die Anwendung kann nicht lügen, wer
+  geschrieben hat. Den Wert setzt die Datenbank, nicht der Aufrufer.
+* **`wer` daneben** — weil die Datenbankanmeldung und der Mensch nicht
+  dasselbe sind. Beides gehört in die Zeile.
+* **`grund NOT NULL` plus `CHECK`** — eine Änderung ohne Begründung ist kein
+  Prüfpfadeintrag. Das ist dieselbe Regel, die
+  [`labcontrol/`](../labcontrol) hier im Repo schon durchsetzt.
+
+### Die Freigabe
+
+```sql
+CREATE TABLE freigabe (
+  prob_id      NUMBER        NOT NULL,
+  um_id        NUMBER        NOT NULL,
+  entscheidung VARCHAR2(16)  NOT NULL
+    CONSTRAINT entscheidung_bekannt
+    CHECK (entscheidung IN ('freigegeben','gesperrt')),
+  wer          VARCHAR2(64)  NOT NULL,
+  wann         TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+  begruendung  VARCHAR2(400) NOT NULL
+    CONSTRAINT begruendung_nicht_leer CHECK (TRIM(begruendung) IS NOT NULL),
+  CONSTRAINT freigabe_pk PRIMARY KEY (prob_id, um_id, wann));
+```
+
+`wann` gehört mit in den Schlüssel: eine Freigabe wird nicht überschrieben,
+eine spätere kommt **daneben**. Damit ist die Entscheidungsgeschichte die
+Tabelle selbst, und man braucht keinen zweiten Ort dafür.
+
+### Der Riegel — und er hält auch gegen den Eigentümer
+
+Zwei Schichten, und beide sind nötig:
+
+```sql
+-- 1. Die Rolle der Anwendung darf nur anhängen und lesen.
+CREATE ROLE labor_arbeiten;
+GRANT SELECT         ON v_ergebnisse TO labor_arbeiten;
+GRANT INSERT, SELECT ON pruefpfad    TO labor_arbeiten;
+GRANT INSERT, SELECT ON freigabe     TO labor_arbeiten;
+-- kein UPDATE, kein DELETE. Was nicht dasteht, gilt nicht.
+
+-- 2. Und ein Riegel, der auch für den Eigentümer gilt.
+CREATE OR REPLACE TRIGGER pruefpfad_unveraenderlich
+  BEFORE UPDATE OR DELETE ON pruefpfad
+BEGIN
+  RAISE_APPLICATION_ERROR(-20001, 'Pruefpfad: nur Anhaengen vorgesehen');
+END;
+```
+
+Vorgeführt — und die interessante Zeile ist die zweite Gruppe, *der Eigentümer
+selbst*:
+
+```
+== Schritt 3: die eigenen Tabellen, mit Rechten je Tabelle
+   Und jetzt der Eigentümer selbst — der, der alles darf:
+     INSERT       -> durchgelassen
+     UPDATE       -> Pruefpfad: UPDATE ist nicht vorgesehen
+     DELETE       -> Pruefpfad: DELETE ist nicht vorgesehen
+     TRUNCATE     -> Pruefpfad: TRUNCATE ist nicht vorgesehen
+     Grund leer   -> verletzt CHECK grund_nicht_leer
+
+   Und die Rolle, unter der die Anwendung läuft:
+     Prüfpfad schreiben     -> durchgelassen
+     Freigabe schreiben     -> durchgelassen
+     Freigabe ohne Grund    -> verletzt CHECK begruendung_nicht_leer
+     Freigabe erfinden      -> verletzt CHECK entscheidung_bekannt
+     Prüfpfad ändern        -> permission denied for table pruefpfad
+     Prüfpfad löschen       -> permission denied for table pruefpfad
+     Messwert ändern        -> permission denied for view ergebnisse
+```
+
+> **Ein Unterschied zu Oracle, den man wissen muss:** `TRUNCATE` ist dort DDL
+> und löst **keinen** DML-Trigger aus — die Zeile oben gilt so nur für
+> PostgreSQL. In Oracle hindert die Anwendungsrolle daran schon, dass sie die
+> Tabelle nicht besitzt (`TRUNCATE` braucht Eigentum oder
+> `DROP ANY TABLE`). Wer es auch dem Eigentümer verbauen will, braucht dort
+> einen DDL-Trigger auf das Ereignis `TRUNCATE` — oder, einfacher und
+> wirksamer: das Schema, das den Prüfpfad besitzt, hat ein Passwort, das im
+> Alltag niemand benutzt, und die Anwendung meldet sich als
+> `labor_arbeiten` an.
+
+### Warum genau das die 17025-Antwort ist
+
+Halte es gegen die Messung aus [Variante 2](#variante-2--sqlite-die-oberfläche-als-rechtesystem):
+dort haben drei Zeilen Python die Tabelle gelöscht, und es gab keine
+Einstellung, die das verhindert hätte. Hier kann selbst der Eigentümer eine
+Prüfpfadzeile nicht ändern, und die Rolle der Anwendung kann nur anhängen.
+
+Das ist der Unterschied zwischen „unsere Oberfläche hat den Knopf nicht" und
+einer Maßnahme, die man vorzeigen kann — und `db_benutzer DEFAULT USER`
+liefert dazu die Angabe, die kein Programm fälschen kann.
