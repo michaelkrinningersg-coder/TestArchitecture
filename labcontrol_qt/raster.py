@@ -17,7 +17,7 @@ from __future__ import annotations
 from typing import Callable, Iterable, Sequence
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QFont, QFontMetrics
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QFrame,
@@ -32,7 +32,7 @@ from labcontrol_qt.stil import FARBEN, OHNE_ZAHL_BG, Stil
 
 #: So breit darf eine Spalte höchstens werden, damit ein langer Freitext
 #: nicht die ganze Tabelle aus dem Bild schiebt.
-MAX_SPALTENBREITE = 320
+MAX_SPALTENBREITE = 360
 MIN_SPALTENBREITE = 60
 
 #: Nach so vielen Zeilen hört das Messen der Spaltenbreite auf. Bei 50 000
