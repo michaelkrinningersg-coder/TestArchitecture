@@ -1,0 +1,955 @@
+{
+  "environment": {
+    "python": "3.12.3",
+    "system": "Linux-6.18.44-fc-v24-x86_64-with-glibc2.39",
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "cpu_count": 4,
+    "measured_at": "2026-09-12 14:33:45",
+    "pyside6": "6.11.2",
+    "tk": "8.6"
+  },
+  "results": [
+    {
+      "full": {
+        "update": {
+          "median_ms": 0.9,
+          "best_ms": 0.9,
+          "runs": [
+            0.9,
+            0.9,
+            0.9,
+            0.9,
+            0.9
+          ]
+        },
+        "painted": {
+          "median_ms": 0.9,
+          "best_ms": 0.9,
+          "runs": [
+            0.9,
+            0.9,
+            0.9,
+            0.9,
+            0.9
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 0.5,
+          "best_ms": 0.5,
+          "runs": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        },
+        "painted": {
+          "median_ms": 0.5,
+          "best_ms": 0.5,
+          "runs": [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5
+          ]
+        }
+      },
+      "filtered_rows": 200,
+      "platform": "python",
+      "variant": "shared",
+      "rows": 2000,
+      "label": "shared-core",
+      "wall_s": 0.1
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 1.1,
+          "best_ms": 1.0,
+          "runs": [
+            1.1,
+            1.1,
+            1.1,
+            1.0,
+            1.1
+          ]
+        },
+        "painted": {
+          "median_ms": 63.9,
+          "best_ms": 63.8,
+          "runs": [
+            65.8,
+            63.8,
+            64.5,
+            63.9,
+            63.8
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 0.7,
+          "best_ms": 0.6,
+          "runs": [
+            0.6,
+            0.7,
+            0.6,
+            0.7,
+            0.7
+          ]
+        },
+        "painted": {
+          "median_ms": 68.5,
+          "best_ms": 66.7,
+          "runs": [
+            66.7,
+            68.5,
+            67.9,
+            69.9,
+            78.2
+          ]
+        }
+      },
+      "filtered_rows": 200,
+      "platform": "offscreen",
+      "variant": "qt",
+      "rows": 2000,
+      "label": "qt-offscreen",
+      "wall_s": 2.2
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 1.1,
+          "best_ms": 1.0,
+          "runs": [
+            1.2,
+            1.0,
+            1.1,
+            1.1,
+            1.1
+          ]
+        },
+        "painted": {
+          "median_ms": 71.8,
+          "best_ms": 63.7,
+          "runs": [
+            71.8,
+            72.7,
+            73.5,
+            63.7,
+            65.9
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 0.7,
+          "best_ms": 0.6,
+          "runs": [
+            0.7,
+            0.7,
+            0.6,
+            0.6,
+            0.8
+          ]
+        },
+        "painted": {
+          "median_ms": 63.2,
+          "best_ms": 58.6,
+          "runs": [
+            70.8,
+            63.2,
+            59.3,
+            58.6,
+            74.4
+          ]
+        }
+      },
+      "filtered_rows": 200,
+      "platform": "xcb",
+      "variant": "qt",
+      "rows": 2000,
+      "label": "qt-x11",
+      "wall_s": 2.3
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 25.0,
+          "best_ms": 24.6,
+          "runs": [
+            24.7,
+            24.6,
+            25.0,
+            25.5,
+            25.9
+          ]
+        },
+        "painted": {
+          "median_ms": 36.5,
+          "best_ms": 35.7,
+          "runs": [
+            37.8,
+            35.7,
+            36.8,
+            35.9,
+            36.5
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 5.0,
+          "best_ms": 4.0,
+          "runs": [
+            4.0,
+            4.0,
+            5.0,
+            5.0,
+            5.2
+          ]
+        },
+        "painted": {
+          "median_ms": 15.6,
+          "best_ms": 15.5,
+          "runs": [
+            15.5,
+            15.8,
+            15.6,
+            15.7,
+            15.5
+          ]
+        }
+      },
+      "filtered_rows": 200,
+      "platform": "x11",
+      "variant": "tk",
+      "rows": 2000,
+      "label": "tk-x11",
+      "wall_s": 1.2
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 3.9,
+          "best_ms": 3.9,
+          "runs": [
+            4.0,
+            4.0,
+            3.9,
+            3.9,
+            3.9
+          ]
+        },
+        "painted": {
+          "median_ms": 3.9,
+          "best_ms": 3.9,
+          "runs": [
+            4.0,
+            4.0,
+            3.9,
+            3.9,
+            3.9
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 3.5,
+          "best_ms": 3.4,
+          "runs": [
+            3.7,
+            11.9,
+            3.5,
+            3.5,
+            3.4
+          ]
+        },
+        "painted": {
+          "median_ms": 3.5,
+          "best_ms": 3.4,
+          "runs": [
+            3.7,
+            11.9,
+            3.5,
+            3.5,
+            3.4
+          ]
+        }
+      },
+      "uncapped_full": {
+        "update": {
+          "median_ms": 27.7,
+          "best_ms": 26.8,
+          "runs": [
+            28.3,
+            26.8,
+            27.1,
+            27.7,
+            35.6
+          ]
+        },
+        "painted": {
+          "median_ms": 27.7,
+          "best_ms": 26.8,
+          "runs": [
+            28.3,
+            26.8,
+            27.1,
+            27.7,
+            35.6
+          ]
+        }
+      },
+      "filtered_rows": 200,
+      "bytes_capped": 75316,
+      "bytes_uncapped": 719004,
+      "bytes_capped_gzip": 5517,
+      "bytes_uncapped_gzip": 35512,
+      "platform": "flask-testclient",
+      "variant": "web",
+      "rows": 2000,
+      "label": "web-server",
+      "wall_s": 0.4
+    },
+    {
+      "capped": {
+        "median_ms": 54.6,
+        "best_ms": 49.6,
+        "runs": [
+          62.1,
+          54.6,
+          51.7,
+          49.6,
+          83.9
+        ]
+      },
+      "capped_rows": 200,
+      "uncapped": {
+        "median_ms": 923.1,
+        "best_ms": 538.7,
+        "runs": [
+          538.7,
+          692.7,
+          923.1,
+          1072.7,
+          1198.3
+        ]
+      },
+      "uncapped_rows": 2000,
+      "platform": "chromium",
+      "variant": "browser",
+      "rows": 2000,
+      "label": "web-browser",
+      "wall_s": 7.7
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 9.5,
+          "best_ms": 9.3,
+          "runs": [
+            9.6,
+            9.6,
+            9.5,
+            9.3,
+            9.3
+          ]
+        },
+        "painted": {
+          "median_ms": 9.5,
+          "best_ms": 9.3,
+          "runs": [
+            9.6,
+            9.6,
+            9.5,
+            9.3,
+            9.3
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 5.1,
+          "best_ms": 5.0,
+          "runs": [
+            5.2,
+            5.1,
+            5.3,
+            5.0,
+            5.0
+          ]
+        },
+        "painted": {
+          "median_ms": 5.1,
+          "best_ms": 5.0,
+          "runs": [
+            5.2,
+            5.1,
+            5.3,
+            5.0,
+            5.0
+          ]
+        }
+      },
+      "filtered_rows": 2000,
+      "platform": "python",
+      "variant": "shared",
+      "rows": 20000,
+      "label": "shared-core",
+      "wall_s": 0.2
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 10.2,
+          "best_ms": 10.0,
+          "runs": [
+            10.0,
+            10.0,
+            10.8,
+            10.5,
+            10.2
+          ]
+        },
+        "painted": {
+          "median_ms": 79.6,
+          "best_ms": 76.9,
+          "runs": [
+            83.9,
+            76.9,
+            79.6,
+            79.5,
+            84.0
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 5.6,
+          "best_ms": 5.5,
+          "runs": [
+            5.5,
+            5.7,
+            5.8,
+            5.6,
+            5.5
+          ]
+        },
+        "painted": {
+          "median_ms": 71.7,
+          "best_ms": 63.2,
+          "runs": [
+            80.4,
+            71.7,
+            73.0,
+            63.2,
+            64.3
+          ]
+        }
+      },
+      "filtered_rows": 2000,
+      "platform": "offscreen",
+      "variant": "qt",
+      "rows": 20000,
+      "label": "qt-offscreen",
+      "wall_s": 2.7
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 10.1,
+          "best_ms": 9.6,
+          "runs": [
+            10.0,
+            9.6,
+            10.4,
+            11.0,
+            10.1
+          ]
+        },
+        "painted": {
+          "median_ms": 78.4,
+          "best_ms": 76.2,
+          "runs": [
+            79.2,
+            76.2,
+            78.1,
+            78.5,
+            78.4
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 5.4,
+          "best_ms": 5.3,
+          "runs": [
+            5.4,
+            5.3,
+            5.4,
+            5.3,
+            5.4
+          ]
+        },
+        "painted": {
+          "median_ms": 74.7,
+          "best_ms": 73.9,
+          "runs": [
+            74.5,
+            74.7,
+            75.7,
+            75.6,
+            73.9
+          ]
+        }
+      },
+      "filtered_rows": 2000,
+      "platform": "xcb",
+      "variant": "qt",
+      "rows": 20000,
+      "label": "qt-x11",
+      "wall_s": 2.8
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 263.1,
+          "best_ms": 249.8,
+          "runs": [
+            263.1,
+            253.7,
+            296.2,
+            249.8,
+            267.0
+          ]
+        },
+        "painted": {
+          "median_ms": 485.7,
+          "best_ms": 448.3,
+          "runs": [
+            463.4,
+            448.3,
+            485.7,
+            560.2,
+            525.0
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 58.3,
+          "best_ms": 54.1,
+          "runs": [
+            59.1,
+            56.0,
+            54.1,
+            58.3,
+            59.8
+          ]
+        },
+        "painted": {
+          "median_ms": 70.4,
+          "best_ms": 68.2,
+          "runs": [
+            70.4,
+            68.2,
+            71.4,
+            72.4,
+            70.2
+          ]
+        }
+      },
+      "filtered_rows": 2000,
+      "platform": "x11",
+      "variant": "tk",
+      "rows": 20000,
+      "label": "tk-x11",
+      "wall_s": 11.9
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 10.5,
+          "best_ms": 10.2,
+          "runs": [
+            10.8,
+            10.5,
+            10.2,
+            10.5,
+            10.5
+          ]
+        },
+        "painted": {
+          "median_ms": 10.5,
+          "best_ms": 10.2,
+          "runs": [
+            10.8,
+            10.5,
+            10.2,
+            10.5,
+            10.5
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 6.8,
+          "best_ms": 6.6,
+          "runs": [
+            6.8,
+            6.6,
+            7.0,
+            6.8,
+            6.7
+          ]
+        },
+        "painted": {
+          "median_ms": 6.8,
+          "best_ms": 6.6,
+          "runs": [
+            6.8,
+            6.6,
+            7.0,
+            6.8,
+            6.7
+          ]
+        }
+      },
+      "uncapped_full": {
+        "update": {
+          "median_ms": 268.1,
+          "best_ms": 258.2,
+          "runs": [
+            268.1,
+            274.1,
+            258.2,
+            260.4,
+            274.7
+          ]
+        },
+        "painted": {
+          "median_ms": 268.1,
+          "best_ms": 258.2,
+          "runs": [
+            268.1,
+            274.1,
+            258.2,
+            260.4,
+            274.7
+          ]
+        }
+      },
+      "filtered_rows": 200,
+      "bytes_capped": 75321,
+      "bytes_uncapped": 7158118,
+      "bytes_capped_gzip": 5520,
+      "bytes_uncapped_gzip": 329811,
+      "platform": "flask-testclient",
+      "variant": "web",
+      "rows": 20000,
+      "label": "web-server",
+      "wall_s": 2.0
+    },
+    {
+      "capped": {
+        "median_ms": 74.6,
+        "best_ms": 74.0,
+        "runs": [
+          74.0,
+          89.1,
+          74.3,
+          76.3,
+          74.6
+        ]
+      },
+      "capped_rows": 200,
+      "uncapped": {
+        "median_ms": 3902.8,
+        "best_ms": 3599.6,
+        "runs": [
+          5857.8,
+          3806.8,
+          4059.7,
+          3599.6,
+          3902.8
+        ]
+      },
+      "uncapped_rows": 20000,
+      "platform": "chromium",
+      "variant": "browser",
+      "rows": 20000,
+      "label": "web-browser",
+      "wall_s": 34.9
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 49.2,
+          "best_ms": 48.6,
+          "runs": [
+            49.2,
+            48.6,
+            49.2
+          ]
+        },
+        "painted": {
+          "median_ms": 49.2,
+          "best_ms": 48.6,
+          "runs": [
+            49.2,
+            48.6,
+            49.2
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 26.3,
+          "best_ms": 26.0,
+          "runs": [
+            26.3,
+            26.0,
+            26.8
+          ]
+        },
+        "painted": {
+          "median_ms": 26.3,
+          "best_ms": 26.0,
+          "runs": [
+            26.3,
+            26.0,
+            26.8
+          ]
+        }
+      },
+      "filtered_rows": 10000,
+      "platform": "python",
+      "variant": "shared",
+      "rows": 100000,
+      "label": "shared-core",
+      "wall_s": 0.8
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 50.3,
+          "best_ms": 49.5,
+          "runs": [
+            50.3,
+            50.8,
+            49.5
+          ]
+        },
+        "painted": {
+          "median_ms": 118.1,
+          "best_ms": 117.9,
+          "runs": [
+            133.8,
+            118.1,
+            117.9
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 27.4,
+          "best_ms": 26.7,
+          "runs": [
+            27.4,
+            27.5,
+            26.7
+          ]
+        },
+        "painted": {
+          "median_ms": 94.1,
+          "best_ms": 92.8,
+          "runs": [
+            92.8,
+            96.4,
+            94.1
+          ]
+        }
+      },
+      "filtered_rows": 10000,
+      "platform": "offscreen",
+      "variant": "qt",
+      "rows": 100000,
+      "label": "qt-offscreen",
+      "wall_s": 3.2
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 48.7,
+          "best_ms": 47.7,
+          "runs": [
+            49.8,
+            48.7,
+            47.7
+          ]
+        },
+        "painted": {
+          "median_ms": 144.4,
+          "best_ms": 117.0,
+          "runs": [
+            144.4,
+            187.6,
+            117.0
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 27.2,
+          "best_ms": 26.4,
+          "runs": [
+            27.2,
+            26.4,
+            27.3
+          ]
+        },
+        "painted": {
+          "median_ms": 102.1,
+          "best_ms": 99.4,
+          "runs": [
+            99.4,
+            102.1,
+            104.7
+          ]
+        }
+      },
+      "filtered_rows": 10000,
+      "platform": "xcb",
+      "variant": "qt",
+      "rows": 100000,
+      "label": "qt-x11",
+      "wall_s": 3.1
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 1251.6,
+          "best_ms": 1236.1,
+          "runs": [
+            1236.1,
+            1308.2,
+            1251.6
+          ]
+        },
+        "painted": {
+          "median_ms": 2864.2,
+          "best_ms": 2848.9,
+          "runs": [
+            2848.9,
+            2864.2,
+            2950.6
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 303.3,
+          "best_ms": 287.9,
+          "runs": [
+            326.4,
+            287.9,
+            303.3
+          ]
+        },
+        "painted": {
+          "median_ms": 438.2,
+          "best_ms": 429.0,
+          "runs": [
+            429.0,
+            438.2,
+            512.7
+          ]
+        }
+      },
+      "filtered_rows": 10000,
+      "platform": "x11",
+      "variant": "tk",
+      "rows": 100000,
+      "label": "tk-x11",
+      "wall_s": 38.8
+    },
+    {
+      "full": {
+        "update": {
+          "median_ms": 53.1,
+          "best_ms": 51.9,
+          "runs": [
+            56.0,
+            51.9,
+            53.1
+          ]
+        },
+        "painted": {
+          "median_ms": 53.1,
+          "best_ms": 51.9,
+          "runs": [
+            56.0,
+            51.9,
+            53.1
+          ]
+        }
+      },
+      "filtered": {
+        "update": {
+          "median_ms": 30.0,
+          "best_ms": 29.4,
+          "runs": [
+            30.0,
+            30.3,
+            29.4
+          ]
+        },
+        "painted": {
+          "median_ms": 30.0,
+          "best_ms": 29.4,
+          "runs": [
+            30.0,
+            30.3,
+            29.4
+          ]
+        }
+      },
+      "uncapped_full": {
+        "update": {
+          "median_ms": 1761.9,
+          "best_ms": 1741.1,
+          "runs": [
+            1833.4,
+            1741.1,
+            1761.9
+          ]
+        },
+        "painted": {
+          "median_ms": 1761.9,
+          "best_ms": 1741.1,
+          "runs": [
+            1833.4,
+            1741.1,
+            1761.9
+          ]
+        }
+      },
+      "filtered_rows": 200,
+      "bytes_capped": 75325,
+      "bytes_uncapped": 35777221,
+      "bytes_capped_gzip": 5524,
+      "bytes_uncapped_gzip": 1636488,
+      "platform": "flask-testclient",
+      "variant": "web",
+      "rows": 100000,
+      "label": "web-server",
+      "wall_s": 8.5
+    }
+  ]
+}

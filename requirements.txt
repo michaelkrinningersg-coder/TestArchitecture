@@ -1,0 +1,12 @@
+# Qt variant
+PySide6>=6.6
+
+# web variant
+Flask>=3.0
+
+# tests
+pytest>=8.0
+
+# screenshots (Tkinter needs Pillow, the web variant needs a browser)
+Pillow>=10.0
+playwright>=1.40
