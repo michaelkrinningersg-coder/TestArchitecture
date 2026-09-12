@@ -15,10 +15,17 @@ Drei Dinge liegen hier, in der Reihenfolge ihrer Entstehung:
 3. **Der [Variantenvergleich](docs/vergleich.md)** Qt / Tkinter / Web, mit dem
    die Frage anfing.
 
-Dazu eine Untersuchung ohne Code: **[Wäre SQLite für das LIMS
-möglich?](docs/sqlite.md)** — das SQL aus `lims_db.py` gegen SQLite gehalten
-(30 von 30 vollständigen Abfragen laufen nach einer Ersetzung) und vier Lesarten
-der Frage getrennt beantwortet.
+Dazu drei Untersuchungen, jede mit gemessenen Zahlen statt Einschätzungen:
+
+* **[Wäre SQLite für das LIMS möglich?](docs/sqlite.md)** — das SQL aus
+  `lims_db.py` gegen SQLite gehalten: 30 von 30 vollständigen Abfragen laufen
+  nach einer Ersetzung, und vier Oracle-Eigenheiten stecken in *einer* Datei.
+* **[Ein neues LIMS auf SQLite — wie groß, wie schnell, wo die Grenze
+  liegt](docs/sqlite-neues-lims.md)** — eine `ERGEBNISSE`-förmige Tabelle bis
+  25 Mio Zeilen gemessen (die Ankerabfrage bleibt bei 28 ms), Benutzerrechte
+  ausprobiert statt behauptet, und PostgreSQL daneben gestellt.
+* **[Fußballmanager oder Idle-Game mit Qt 6?](docs/spiele.md)** — Takt, Simulation
+  und Spielstand gemessen; 20 Saisons Ligahistorie in 0,13 s.
 
 ---
 

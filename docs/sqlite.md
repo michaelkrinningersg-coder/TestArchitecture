@@ -34,18 +34,43 @@ Aus `lims_db.py` geholt und geprüft:
 | Fragmente (setzt der Code zur Laufzeit zusammen) | 20 |
 
 Nötig war genau eine Ersetzung: **`NVL(a, b)` → `COALESCE(a, b)`** (15 Stellen),
-dazu ein `FROM dual`, das in SQLite entfällt. Sonst nichts.
+dazu ein `FROM dual`, das in SQLite entfällt.
 
-Was **nicht** vorkommt, und das ist die eigentliche Nachricht:
+### Nachtrag: zwei Oracle-Eigenheiten in den Fragmenten
 
-`ROWNUM` · `SYSDATE` · `TO_DATE` · `TO_CHAR` · `TRUNC` · Sequenzen
-(`.NEXTVAL`) · `MERGE` · `CONNECT BY` · `(+)`-Outer-Joins · analytische
-Funktionen (`OVER(...)`) · `LISTAGG` · `REGEXP_*` · `FETCH FIRST`
+Der erste Durchgang oben prüft nur die 30 *vollständigen* Anweisungen. Die
+20 Fragmente sind damit ungeprüft geblieben, und genau dort steckt der Rest.
+Nachgesehen über den ganzen Quelltext, nicht nur über fertige Abfragen:
 
-Das ist ungewöhnlich sauber für gewachsenen Oracle-Code. **Praktischer Rat,
-unabhängig von jeder Datenbankfrage:** schreibt künftig `COALESCE` statt `NVL`
-— das versteht Oracle genauso, und damit ist euer SQL ohne Nacharbeit
-portabel.
+| Eigenheit | Stellen in `lims_db.py` | wo |
+|---|---:|---|
+| `NVL(` | 16 | verteilt |
+| `ROWNUM <= :grenze` | 5 | Zeilengrenzen, zur Laufzeit angehängt |
+| `REGEXP_LIKE(serie, '^[0-9]{4}')` | 1 | `JAHR_REGEL`, in zwei Abfragen eingesetzt |
+| `FROM dual` | 1 | `INSERT … SELECT … WHERE NOT EXISTS` |
+
+Beide sind mechanisch zu ersetzen, und beide sitzen schon an der richtigen
+Stelle — in *einer* Datei:
+
+* `ROWNUM <= :grenze` → `LIMIT :grenze`. Euer Kommentar sagt selbst, warum es
+  dasteht: „Oracle 11.2 kennt kein FETCH FIRST". SQLite und PostgreSQL kennen
+  `LIMIT`.
+* `REGEXP_LIKE(serie, '^[0-9]{4}')` → in SQLite
+  `substr(serie,1,4) GLOB '[0-9][0-9][0-9][0-9]'`, ohne Erweiterung. In
+  PostgreSQL ab 15 heißt die Funktion `regexp_like` und kann wörtlich
+  stehenbleiben.
+
+Was wirklich **nicht** vorkommt — geprüft über alle `.py` des Repos, und
+`DECODE(`-Treffer waren durchweg Pythons `bytes.decode`:
+
+`SYSDATE` · `TO_DATE` · `TO_CHAR` · `TO_NUMBER` · `TRUNC(` · Sequenzen
+(`.NEXTVAL`) · `MERGE INTO` · `CONNECT BY` · `(+)`-Outer-Joins · analytische
+Funktionen (`OVER(...)`) · `LISTAGG` · `DECODE` · `NVL2` · `FETCH FIRST`
+
+Das bleibt ungewöhnlich sauber für gewachsenen Oracle-Code: vier Eigenheiten
+in 23 Stellen einer Datei. **Praktischer Rat, unabhängig von jeder
+Datenbankfrage:** schreibt künftig `COALESCE` statt `NVL` — das versteht
+Oracle genauso, und damit ist euer SQL ohne Nacharbeit portabel.
 
 ## Die eigentliche Frage hat vier Lesarten
 

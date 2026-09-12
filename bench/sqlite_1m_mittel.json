@@ -1,0 +1,128 @@
+{
+  "zeilen_soll": 1000000,
+  "fuellung": "mittel",
+  "kalt": false,
+  "fuellen": {
+    "zeilen": 996000,
+    "laeufe": 166,
+    "einfuegen_s": 21.7,
+    "zeilen_pro_s": 45812
+  },
+  "groesse_mb": {
+    "ohne_index": 302.6,
+    "mit_index": 358.3,
+    "byte_je_zeile": 377.2
+  },
+  "index": {
+    "bauzeit_s": {
+      "lauf": 0.6,
+      "schluessel": 0.6,
+      "serie": 0.5
+    },
+    "zuwachs_mb": 55.7
+  },
+  "ohne_index": {
+    "anker": {
+      "median_ms": 137.7,
+      "best_ms": 137.2,
+      "runden": [
+        137.2,
+        150.8,
+        137.7
+      ],
+      "treffer": 6000
+    },
+    "serien": {
+      "median_ms": 179.0,
+      "best_ms": 177.6,
+      "runden": [
+        180.4,
+        177.6
+      ],
+      "treffer": 48
+    },
+    "zaehlen": {
+      "median_ms": 61.4,
+      "best_ms": 60.4,
+      "runden": [
+        62.3,
+        60.4
+      ],
+      "treffer": 996000
+    },
+    "anker_plan": "SCAN e\nSEARCH p USING INTEGER PRIMARY KEY (rowid=?)\nSEARCH t USING INDEX sqlite_autoindex_teilproben_1 (prob_id=? AND um_id=?) LEFT-JOIN\nSEARCH pa USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN\nSEARCH pm USING INDEX sqlite_autoindex_pruefmethoden_1 (id=? AND version=?) LEFT-JOIN\nSEARCH ei USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN\nSEARCH ev USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN\nSEARCH ar USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN\nUSE TEMP B-TREE FOR ORDER BY"
+  },
+  "mit_index": {
+    "anker": {
+      "median_ms": 28.0,
+      "best_ms": 27.6,
+      "runden": [
+        40.6,
+        28.4,
+        28.0,
+        28.0,
+        27.6
+      ],
+      "treffer": 6000
+    },
+    "serien": {
+      "median_ms": 0.2,
+      "best_ms": 0.1,
+      "runden": [
+        0.3,
+        0.1
+      ],
+      "treffer": 48
+    },
+    "zaehlen": {
+      "median_ms": 3.9,
+      "best_ms": 3.4,
+      "runden": [
+        4.5,
+        3.4
+      ],
+      "treffer": 996000
+    },
+    "anker_plan": "SEARCH e USING INDEX ix_erg_lauf (serie=? AND um_id=? AND gegr_id=?)\nSEARCH p USING INTEGER PRIMARY KEY (rowid=?)\nSEARCH t USING INDEX sqlite_autoindex_teilproben_1 (prob_id=? AND um_id=?) LEFT-JOIN\nSEARCH pa USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN\nSEARCH pm USING INDEX sqlite_autoindex_pruefmethoden_1 (id=? AND version=?) LEFT-JOIN\nSEARCH ei USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN\nSEARCH ev USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN\nSEARCH ar USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN\nUSE TEMP B-TREE FOR ORDER BY"
+  },
+  "export": {
+    "zeilen": 6000,
+    "gesamt_ms": 26.3,
+    "je_zeile_us": 4.4
+  },
+  "sperren": {
+    "delete": {
+      "journal_mode": "delete",
+      "zwei_schreiber": "database is locked",
+      "warten_schreiber_ms": 1003,
+      "leser_waehrend_schreiber": "durchgelassen",
+      "schreiber_waehrend_leser": "database is locked",
+      "warten_schreiber_bei_leser_ms": 1003,
+      "export_haltedauer_ms": 81,
+      "export_zeilen": 6000,
+      "wartezeit_zweiter_bearbeiter_ms": 81
+    },
+    "wal": {
+      "journal_mode": "wal",
+      "zwei_schreiber": "database is locked",
+      "warten_schreiber_ms": 1003,
+      "leser_waehrend_schreiber": "durchgelassen",
+      "schreiber_waehrend_leser": "durchgelassen",
+      "warten_schreiber_bei_leser_ms": 2,
+      "export_haltedauer_ms": 84,
+      "export_zeilen": 6000,
+      "wartezeit_zweiter_bearbeiter_ms": 55
+    }
+  },
+  "grenzen": {
+    "page_size": 4096,
+    "max_page_count": 4294967294,
+    "max_db_tib_4k": 16.0,
+    "max_db_tib_64k": 256.0,
+    "sqlite": "3.45.1"
+  },
+  "umgebung": {
+    "python": "3.11.15",
+    "kerne": 4
+  }
+}

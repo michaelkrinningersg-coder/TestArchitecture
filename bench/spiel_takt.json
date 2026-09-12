@@ -1,0 +1,42 @@
+{
+  "takt": {
+    "soll_ms": 16.67,
+    "ticks": 176,
+    "median_ms": 17.15,
+    "p95_ms": 17.19,
+    "hoechster_ms": 17.44,
+    "abweichung_median_ms": 0.49
+  },
+  "idle": {
+    "werte": 10000,
+    "ticks_pro_s": 1239,
+    "ms_je_tick": 0.81
+  },
+  "offline": {
+    "ticks_fuer_30_tage": 155520000,
+    "geschlossen_ms": 1.57,
+    "getickt_hochgerechnet_h": 26.0,
+    "float_laeuft_ueber": true,
+    "zehnerpotenzen_nach_30_tagen": 671972
+  },
+  "spiel": {
+    "ms_je_spiel": 0.019,
+    "spiele_je_saison": 306,
+    "saison_ms": 6.3,
+    "zwanzig_saisons_s": 0.13,
+    "spiele_pro_s": 48448
+  },
+  "ablage": {
+    "spieler": 4500,
+    "spiele": 6120,
+    "groesse_kb": 440,
+    "laden_ms": 0.4,
+    "kader": 25,
+    "tabellenplaetze": 18
+  },
+  "umgebung": {
+    "python": "3.12.3",
+    "kerne": 4,
+    "plattform": "offscreen"
+  }
+}
