@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
+from typing import Protocol
 
 #: Deviation (as a fraction of the permitted tolerance) from which a result is
 #: still inside tolerance but no longer comfortable.
@@ -59,7 +60,22 @@ class Sample:
         return self.deviation / self.tolerance
 
 
-def status_of(sample: Sample, today: date) -> Status:
+class Evaluable(Protocol):
+    """Anything the Ampel can judge: a deviation from target and a due date.
+
+    The comparison variants pass a :class:`Sample`, the LabControl application
+    passes its own record type — both are judged by the rules below and by
+    nothing else.
+    """
+
+    @property
+    def deviation_ratio(self) -> float: ...
+
+    @property
+    def due(self) -> date: ...
+
+
+def status_of(sample: Evaluable, today: date) -> Status:
     """Evaluate the Ampel state of ``sample`` as seen on ``today``.
 
     Out of tolerance or past its due date blocks the release; close to either

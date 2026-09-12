@@ -3,3 +3,9 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+
+build/
+dist/
+*.spec.bak
+labcontrol-selftest.log
+*.sqlite3

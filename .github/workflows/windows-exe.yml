@@ -1,0 +1,124 @@
+name: Windows-EXE
+
+# Baut LabControl zu einer einzelnen startbaren Datei und hängt sie als
+# Artefakt an den Lauf. Gebaut wird für x86-64: Qt 6 gibt es nicht für 32-Bit
+# Windows, und PySide6 liefert kein win32-Wheel.
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "labcontrol/**"
+      - "core/**"
+      - "packaging/**"
+      - "tests/**"
+      - "requirements-app.txt"
+      - ".github/workflows/windows-exe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-exe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: LabControl.exe (x86-64)
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: x64
+          cache: pip
+          cache-dependency-path: requirements-app.txt
+
+      - name: Abhängigkeiten installieren
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-app.txt
+          pip install pytest "pyinstaller~=6.0"
+
+      - name: Versionsnummern abgleichen
+        run: python packaging/check_version.py
+
+      - name: Tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest tests -q
+
+      - name: EXE bauen
+        run: pyinstaller packaging/labcontrol.spec --noconfirm
+
+      - name: Startet die gebaute EXE?
+        env:
+          QT_QPA_PLATFORM: offscreen
+          LABCONTROL_SELFTEST_LOG: selftest.log
+        shell: pwsh
+        run: |
+          # Eine Fensteranwendung hängt sich nicht an die Konsole: PowerShell
+          # kehrt sofort zurück und $LASTEXITCODE wäre wertlos. Deshalb warten
+          # wir ausdrücklich auf den Prozess und lesen seinen Rückgabewert.
+          $process = Start-Process -FilePath ".\dist\LabControl.exe" `
+                                   -ArgumentList "--selftest" -Wait -PassThru
+          if (Test-Path selftest.log) { Get-Content selftest.log }
+          if ($process.ExitCode -ne 0) {
+            throw "Selbsttest der EXE fehlgeschlagen (Rückgabewert $($process.ExitCode))"
+          }
+
+      - name: Prüfsumme schreiben
+        shell: pwsh
+        run: |
+          $hash = Get-FileHash .\dist\LabControl.exe -Algorithm SHA256
+          $size = [math]::Round((Get-Item .\dist\LabControl.exe).Length / 1MB, 1)
+          "$($hash.Hash)  LabControl.exe" | Out-File -Encoding ascii dist\SHA256SUMS.txt
+          Add-Content $env:GITHUB_STEP_SUMMARY "## LabControl.exe"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- Größe: $size MB"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- SHA256: ``$($hash.Hash)``"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- Architektur: x86-64 (Qt 6 hat kein 32-Bit)"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- Selbsttest: bestanden"
+
+      - name: Artefakt hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: LabControl-windows-x64
+          path: |
+            dist/LabControl.exe
+            dist/SHA256SUMS.txt
+            selftest.log
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: Veröffentlichung an einem Tag
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Artefakt holen
+        uses: actions/download-artifact@v4
+        with:
+          name: LabControl-windows-x64
+          path: dist
+
+      - name: Release anlegen
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/LabControl.exe
+            dist/SHA256SUMS.txt
+          body: |
+            LabControl für Windows, eine Datei, keine Installation.
+
+            Gebaut für **x86-64**. Eine 32-Bit-Fassung gibt es nicht:
+            Qt 6 wird für 32-Bit-Windows nicht mehr ausgeliefert.

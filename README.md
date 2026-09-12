@@ -1,269 +1,152 @@
-# LabControl — drei Oberflächen, eine Fachlogik
+# LabControl
 
-Dieselbe Anwendung dreimal gebaut: eine Freigabeliste für Laborproben mit
-Volltextsuche, Statusfilter, Sortierung und Ampel (frei / prüfen / gesperrt).
-Einmal in **Qt**, einmal in **Tkinter**, einmal als **server-gerenderte
-Web-Seite**. Alle drei benutzen denselben Fachkern unverändert, zeigen dieselben
-Spalten, dieselben Farben und dieselben Daten — damit ein gemessener Unterschied
-ein Unterschied der Oberfläche ist und nichts anderes.
+Freigabe von Laborproben mit Prüfpfad. Qt 6 über PySide6, SQLite als Ablage,
+unter Windows eine einzelne Datei ohne Installation.
 
-Alle Zahlen unten sind auf dieser Maschine gemessen, nicht geschätzt.
-Nachrechnen: `tools/run_all.sh`.
+![LabControl](docs/screenshots/app_uebersicht.png)
 
-## Sofort ausprobieren
+Die Ampel bewertet, ein Mensch entscheidet, der Prüfpfad hält beides fest —
+in dieser Reihenfolge, weil eine 17025-Nachweisführung genau das verlangt.
+
+## Was die Anwendung kann
+
+* **Probenliste** mit Volltextsuche über Probe-ID, Analyt, Matrix und Prüfer,
+  Filter nach Bewertung und Freigabestatus, Sortierung über jede Spalte.
+* **Ampel** aus Messwert, Toleranz und Frist — und sie sagt, *warum* sie so
+  steht: „Frist seit 3 Tagen überschritten" statt nur „gesperrt".
+* **Freigeben und Sperren** durch eine Person, nie ohne Begründung. Wer eine
+  Probe außerhalb der Toleranz freigeben will, wird ausdrücklich darauf
+  hingewiesen.
+* **Prüfpfad**, der nur wächst: Anlegen, jede Feldänderung mit Alt- und
+  Neuwert, jede Entscheidung mit Benutzer, Zeitpunkt (UTC) und Begründung.
+  Kein Ändern, kein Löschen — die Ablage bietet dafür keine Funktion an.
+* **Anlegen und Bearbeiten** mit geprüften Eingaben; die Probe-ID bleibt beim
+  Bearbeiten fest, sonst zerfiele der Prüfpfad.
+* **CSV-Export** der gerade sichtbaren Liste, mit Semikolon und BOM, damit
+  Excel sie ohne Rückfragen richtig öffnet.
+* **Fensterzustand** — Größe, Aufteilung, Werkzeugleiste — bleibt erhalten.
+
+| Auswahl mit Detailspalte | Entscheidung | Prüfpfad |
+|---|---|---|
+| [![Auswahl](docs/screenshots/app_auswahl.png)](docs/screenshots/app_auswahl.png) | [![Entscheidung](docs/screenshots/app_entscheidung.png)](docs/screenshots/app_entscheidung.png) | [![Prüfpfad](docs/screenshots/app_pruefpfad.png)](docs/screenshots/app_pruefpfad.png) |
+
+## Die EXE aus GitHub Actions
+
+Der Workflow [`.github/workflows/windows-exe.yml`](.github/workflows/windows-exe.yml)
+baut bei jedem Push auf `labcontrol/`, `core/`, `packaging/` oder `tests/` eine
+startbare Datei und hängt sie an den Lauf:
+
+1. [Actions](../../actions/workflows/windows-exe.yml) öffnen, den obersten Lauf anklicken
+2. unten unter **Artifacts** `LabControl-windows-x64` herunterladen
+3. entpacken, `LabControl.exe` starten — keine Installation, kein Python nötig
+
+Im Artefakt liegen die EXE, eine SHA256-Prüfsumme und das Protokoll des
+Selbsttests. Der Workflow lässt sich unter *Run workflow* auch von Hand
+auslösen; ein Tag `v1.0.0` legt zusätzlich ein Release an.
+
+Der Lauf gibt die Datei nur heraus, wenn sie vorher gestartet ist: nach dem
+Bauen ruft er `LabControl.exe --selftest` auf, was Datenbank, Filter,
+Entscheidung, Prüfpfad, CSV-Export und alle Dialoge einmal durchspielt. Bricht
+das ab, schlägt der Workflow fehl, statt eine kaputte Datei zu veröffentlichen.
+
+### Warum 64 Bit und nicht x86-32
+
+**Eine 32-Bit-Fassung ist nicht baubar.** Qt 6 wird für 32-Bit-Windows nicht
+mehr ausgeliefert, und PySide6 hat entsprechend kein `win32`-Wheel — nur
+`win_amd64`. Nachprüfbar in einer Zeile:
+
+```console
+$ pip download PySide6 --platform win32 --only-binary=:all: --python-version 3.12
+ERROR: Could not find a version that satisfies the requirement PySide6 (from versions: none)
+```
+
+Der Build läuft deshalb auf **x86-64**, was auf jedem Windows der letzten
+fünfzehn Jahre läuft. Wer wirklich 32 Bit braucht, müsste auf Qt 5 (PyQt5 oder
+PySide2) zurückgehen — dann ist es aber nicht mehr Qt 6.
+
+## Selbst starten
 
 ```bash
-pip install -r requirements.txt
-
-python -m variant_qt.app  --rows 20000     # Qt
-python -m variant_tk.app  --rows 20000     # Tkinter
-python -m variant_web.app --rows 20000     # Flask → http://127.0.0.1:5000
-
-pytest tests variant_web -q                # 21 Tests, ~0,6 s, ohne Fenster
-python bench/run_bench.py --sizes 2000     # schneller Messdurchlauf
-tools/run_all.sh                           # Tests + Messungen + Screenshots
+pip install -r requirements-app.txt
+python -m labcontrol
 ```
 
-Ohne Bildschirm (Server, CI):
+| Aufruf | Wirkung |
+|---|---|
+| `python -m labcontrol` | normaler Start, Datenbank im Benutzerprofil |
+| `--database pfad.sqlite3` | andere Datenbankdatei benutzen |
+| `--rows 20000` | Erstbefüllung beim ersten Start (`0` = leer beginnen) |
+| `--selftest` | einmal hochfahren, alles prüfen, Rückgabewert setzen |
+| `--screenshot bild.png` | Fenster sichern und beenden |
+| `--version` | Versionsnummer ausgeben |
+
+Beim ersten Start ist die Datenbank leer und wird mit einem plausiblen
+Arbeitsvorrat befüllt, ein Teil davon schon entschieden — die Anwendung öffnet
+also nicht ins Nichts. Die Datei liegt unter Windows in
+`%APPDATA%\LabControl\labcontrol.sqlite3`, unter Linux in
+`~/.local/share/LabControl/`.
+
+Ohne Bildschirm, etwa auf einem Server:
 
 ```bash
-QT_QPA_PLATFORM=offscreen python -m variant_qt.app --screenshot qt.png
-xvfb-run -a python -m variant_tk.app --screenshot tk.png
+QT_QPA_PLATFORM=offscreen python -m labcontrol --selftest
+xvfb-run -a python -m labcontrol --screenshot fenster.png
 ```
-
-## Optik
-
-Gleiche 2 000 Proben, gleiche Fenstergröße (1400 × 780), gleicher Filter.
-
-| Qt | Tkinter | Web |
-|---|---|---|
-| ![Qt](docs/screenshots/qt_overview.png) | ![Tkinter](docs/screenshots/tk_overview.png) | ![Web](docs/screenshots/web_overview.png) |
-
-Gefiltert auf `Cadmium`: [Qt](docs/screenshots/qt_filtered.png) ·
-[Tkinter](docs/screenshots/tk_filtered.png) · [Web](docs/screenshots/web_filtered.png).
-Nur gesperrte Proben: [Qt](docs/screenshots/qt_blocked.png) ·
-[Tkinter](docs/screenshots/tk_blocked.png) · [Web](docs/screenshots/web_blocked.png).
-
-Die beiden Desktop-Varianten sehen sich sehr ähnlich, weil beide die
-Plattformschrift und das Systemthema benutzen. Zwei Unterschiede sind keine
-Geschmacksfrage, sondern Grenzen des Widgets:
-
-* Ein `ttk.Treeview` färbt **nur ganze Zeilen**. Eine Ampel als farbige
-  Einzelzelle gibt es dort nicht; Qt kann das über `Qt.BackgroundRole` pro
-  Zelle, die Web-Variante über eine CSS-Klasse pro Zelle. Damit die Bilder
-  vergleichbar bleiben, färben hier alle drei die ganze Zeile.
-* Fettdruck pro Zelle kann der Treeview ebenfalls nicht — der Status steht dort
-  in normaler Schrift, in Qt und im Browser fett.
-
-## Umfang
-
-Codezeilen ohne Leerzeilen, Kommentare und Docstrings (`python tools/count_loc.py`):
-
-| | Oberfläche | CLI-Gerüst | gesamt |
-|---|---|---|---|
-| Tkinter | **104** | 35 | 139 |
-| Web (Python + Template) | **134** | 12 | 146 |
-| Qt | **143** | 32 | 175 |
-| *gemeinsamer Fachkern* | *169* | – | *169* |
-
-Das CLI-Gerüst (argparse, Screenshot-Ausgabe) ist Messwerkzeug, keine Anwendung,
-deshalb getrennt ausgewiesen. Von den 134 Zeilen der Web-Variante sind 24 CSS —
-Gestaltung, die Qt und Tkinter geschenkt bekommen.
-
-**Der Abstand ist klein.** 104 gegen 134 gegen 143 Zeilen, ein Unterschied von
-39 Zeilen zwischen der kleinsten und der größten Variante. Der Grund steht in
-der letzten Zeile der Tabelle: sobald Ampelregeln, Filter und Sortierung einmal
-in `core/` liegen, bleibt in jeder Variante nur noch die Anbindung an das
-Toolkit übrig. Qt zahlt seine rund 40 Zeilen Mehraufwand fast vollständig für
-das Tabellenmodell (`SampleTableModel`, 44 Zeilen) — und bekommt dafür genau das
-Tempoverhalten, das die nächste Tabelle zeigt.
-
-## Tempo
-
-Gemessen wird der Weg vom geänderten Filter bis zur fertigen Tabelle. Zwei
-Zahlen pro Zelle, weil sie verschiedene Fragen beantworten:
-
-* **Aktualisierung** — filtern, sortieren, Ergebnis an das Widget geben.
-* **gezeichnet** — dasselbe plus erzwungenes, synchrones Neuzeichnen.
-
-Median aus fünf Durchläufen (drei bei 100 000), Millisekunden.
-Rohdaten: `bench/results.json`, Tabellen: `bench/results.md`.
-
-### Vollaufbau: Filter leeren, alle Zeilen anzeigen
-
-| | 2 000 | 20 000 | 100 000 |
-|---|---|---|---|
-| gemeinsamer Kern (Untergrenze) | 0,9 | 9,5 | 49,2 |
-| Qt — Aktualisierung | **1,1** | **10,1** | **48,7** |
-| Qt — gezeichnet | 71,8 | 78,4 | 144,4 |
-| Tkinter — Aktualisierung | 25,0 | 263,1 | 1 251,6 |
-| Tkinter — gezeichnet | 36,5 | **485,7** | **2 864,2** |
-| Web — Server-Antwort (200 Zeilen) | 3,9 | 10,5 | 53,1 |
-
-### Filter-Tastendruck (`blei`, rund ein Zehntel der Zeilen), gezeichnet
-
-| | 2 000 | 20 000 | 100 000 |
-|---|---|---|---|
-| gemeinsamer Kern | 0,5 | 5,1 | 26,3 |
-| Qt | 63,2 | 74,7 | 102,1 |
-| Tkinter | **15,6** | 70,4 | 438,2 |
-| Web — Server-Antwort | 3,5 | 6,8 | 30,0 |
-
-Was darin steht:
-
-**Qt kostet nichts, was mit der Zeilenzahl wächst.** Die Aktualisierungszeile
-liegt auf der Untergrenze des gemeinsamen Kerns (1,1 gegen 0,9 · 10,1 gegen 9,5
-· 48,7 gegen 49,2 ms). Qt fragt nur die Zellen ab, die es zeichnet — 29 sichtbare
-Zeilen, unabhängig davon, ob 2 000 oder 100 000 dahinterliegen. Alles, was bei
-Qt mit N wächst, ist Python-Code, den die anderen beiden genauso ausführen.
-
-**Bei Tkinter wächst beides mit N.** Nicht nur das Einfügen (25 → 263 → 1 252 ms),
-auch das Zeichnen (11 → 223 → 1 613 ms Aufschlag): der Treeview legt jedes
-Element an, nicht nur die sichtbaren. Bei 20 000 Zeilen dauert das Leeren des
-Suchfelds knapp eine halbe Sekunde, bei 100 000 fast drei.
-
-**Unter ein paar tausend Zeilen ist Tkinter nicht langsamer.** Bei 2 000 Zeilen
-ist es für einen Filter-Tastendruck sogar schneller als Qt (15,6 gegen 63,2 ms):
-Tkinter füllt 200 Treffer und zeichnet nur das Nötige, Qt zeichnet nach jedem
-Modell-Reset das ganze Sichtfeld neu. Wo der Gleichstand genau liegt, ist
-nachgemessen (`bench/results_crossover.json`, gezeichneter Vollaufbau):
-
-| Zeilen | 3 000 | 4 000 | 6 000 | 8 000 |
-|---|---|---|---|---|
-| Qt | 70,7 | 72,1 | 78,7 | 74,4 |
-| Tkinter | 48,0 | 59,2 | 68,8 | 90,1 |
-
-Hier kippt es zwischen 6 000 und 8 000 Zeilen. Diese Grenze ist aber ein Artefakt
-des konstanten Zeichenaufwands dieser Umgebung, kein Eigenschaftsunterschied der
-Toolkits: ohne erzwungenes Neuzeichnen liegt Qt bei jeder Größe vorn (2,0 gegen
-39,6 ms bei 4 000 Zeilen, 4,1 gegen 97,0 ms bei 8 000). Mit schnellerer Grafik
-wandert der Gleichstand nach links und verschwindet praktisch. Ein erster
-Messdurchlauf legte ihn zwischen 4 000 und 6 000 — die Streuung von Qts
-Zeichenkonstante ist größer als der Abstand der beiden Kurven in diesem Bereich.
-
-**Zum Zeichnen, ehrlich gesagt:** der Aufschlag bei Qt (70 · 68 · 96 ms) ist
-Software-Rasterung in einem Container ohne GPU. Einzeln gemessen
-(`QT_QPA_PLATFORM=offscreen python bench/paint_probe.py`) kostet ein `repaint()`
-hier 28 bis 36 ms — bei 2 000, 20 000 und 100 000 Zeilen gleich viel, weil immer
-dieselben 29 Zeilen sichtbar sind. Auf einem echten Arbeitsplatz ist das
-deutlich weniger. Konstant bleibt es dort auch: Qt zeichnet immer nur das
-Sichtfeld. Bei Tkinter ist der Zeichenanteil dagegen
-selbst von N abhängig, und das ändert sich auf schnellerer Hardware nicht,
-sondern skaliert nur.
-
-Deshalb hat die Tkinter-Variante ein Debouncing von 150 ms im Suchfeld
-(`variant_tk/app.py`), die Qt-Variante nicht. Ohne das entstünde bei 20 000
-Zeilen pro Tastendruck ein Aufbau von bis zu einer halben Sekunde.
-
-## Nutzlast der Web-Variante
-
-Die Seite zeigt bewusst nur 200 Zeilen. Was passiert, wenn man die Grenze
-aufhebt (`--limit 0`):
-
-| Zeilen | HTML mit Grenze | gzip | HTML ohne Grenze | gzip | Serverzeit ohne Grenze |
-|---|---|---|---|---|---|
-| 2 000 | 74 KB | 5 KB | 0,69 MB | 35 KB | 27,7 ms |
-| 20 000 | 74 KB | 5 KB | **6,83 MB** | **322 KB** | 268,1 ms |
-| 100 000 | 74 KB | 5 KB | 34,12 MB | 1,56 MB | 1 761,9 ms |
-
-Und im echten Browser (Chromium, Navigation bis fertiges Layout):
-
-| Zeilen | mit Grenze (200 Zeilen) | ohne Grenze |
-|---|---|---|
-| 2 000 | 54,6 ms | 923,1 ms |
-| 20 000 | **74,6 ms** | **3 902,8 ms** |
-
-Zwei Korrekturen an der Faustregel „etwa 3 MB pro Interaktion bei 20 000 Zeilen":
-
-* **Roh ist es mehr, übertragen deutlich weniger.** 6,83 MB unkomprimiert, aber
-  322 KB nach gzip — und gzip macht jeder Webserver von selbst. Die Bytes auf der
-  Leitung sind nicht das Hauptproblem.
-* **Das Problem ist der Browser.** 3,9 Sekunden bis die 20 000 Zeilen im Layout
-  stehen, gegen 74,6 ms mit Grenze. Faktor 52. Die 200-Zeilen-Grenze ist keine
-  Sparmaßnahme an Bandbreite, sie ist der Unterschied zwischen benutzbar und
-  unbenutzbar.
-
-Nebenbei aufgefallen und behoben: ein `style`-Attribut pro Zeile statt einer
-CSS-Klasse kostete bei 20 000 Zeilen rund 780 KB zusätzliches HTML. Die
-Ampelfarben kommen weiterhin aus `core/model.py`, werden aber einmal im
-`<style>`-Block ausgegeben statt 20 000-mal.
-
-## Prüfbarkeit
-
-21 Tests, rund 0,6 Sekunden, kein Fenster:
-
-```
-pytest tests variant_web -q
-20 passed, 1 skipped in 0.55s     # ohne DISPLAY
-21 passed in 0.58s                # unter xvfb-run
-```
-
-* `tests/test_core.py` — 12 Tests auf Ampelgrenzen, Überfälligkeit, Suche,
-  Sortierung, Determinismus der Daten. Kein Toolkit beteiligt.
-* `variant_web/test_app.py` — 6 Tests auf die vollständige Oberfläche: Filter,
-  Sortierrichtung, Ampel-Markup, Leerzustand, 200-Zeilen-Grenze, Statuszähler.
-  Über den Flask-Testclient, ohne Server und ohne Browser.
-* `tests/test_variants_headless.py` — 3 Tests darüber, was jede Variante
-  überhaupt zum Testen braucht.
-
-Der letzte Punkt ist der interessante, und er fällt anders aus als erwartet:
-
-* Das **Qt-Tabellenmodell** ist ohne Fenster prüfbar, das ganze Qt-Fenster mit
-  `QT_QPA_PLATFORM=offscreen` ebenfalls — `window.search.setText("Cadmium")`
-  und dann `window.model.rowCount()` abfragen funktioniert in normalem pytest,
-  ohne pytest-qt, ohne X-Server.
-* Die **Tkinter-Variante** lässt sich ohne X-Server nicht einmal instanziieren.
-  Genau dieser eine Test wird oben übersprungen. Unter `xvfb-run` läuft er.
-* Die **Web-Variante** braucht gar nichts.
-
-Der Vorsprung der Web-Variante bei der Prüfbarkeit ist damit real, aber kleiner
-als er wirkt — und er verschiebt sich, sobald der Fachkern geteilt ist: was für
-eine 17025-Nachweisführung zählt, sind die Ampelregeln, und die liegen in
-`core/model.py`, werden einmal geprüft und gelten für alle drei Varianten. Was
-oberflächenspezifisch bleibt, ist die Anbindung.
-
-## Was hier nicht gemessen ist
-
-* **Ein Nutzer.** Alle Zahlen kommen aus erzwungenen Zustandswechseln, nicht aus
-  echtem Tippen. Debouncing, Bildwiederholrate und Eingabelatenz des Fenstersystems
-  kommen im Alltag dazu.
-* **Echte Grafikhardware.** Xvfb und der Offscreen-Backend rastern auf der CPU.
-  Absolutwerte sind pessimistisch, die Skalierung ist es nicht.
-* **Bearbeiten, Speichern, Mehrbenutzerbetrieb, Rechte, Audit-Trail.** Alle drei
-  Varianten sind reine Leseansichten. Für 17025 fehlt der ganze schreibende Teil,
-  und dort liegen die Unterschiede zwischen Desktop und Web ganz woanders
-  (Sperren, Transaktionen, Signaturen).
-* **Verteilung und Betrieb.** Ein Qt-Programm muss auf jeden Rechner, eine
-  Web-Seite auf einen Server. Das entscheidet in der Praxis oft mehr als
-  Millisekunden.
-* **Große Datenmengen im Browser.** Die Web-Variante ist nur deshalb schnell,
-  weil sie 200 Zeilen zeigt. Wer dort scrollbare 100 000 Zeilen will, braucht
-  virtuelles Scrollen — dann verschiebt sich der Vergleich noch einmal.
 
 ## Aufbau
 
 ```
-core/            Fachlogik: Modell, Ampelregeln, Datengenerator, Filter/Sortierung
-variant_qt/      PySide6: QTableView über QAbstractTableModel
-variant_tk/      Tkinter: ttk.Treeview mit Zeilen-Tags und Debouncing
-variant_web/     Flask: server-gerendertes HTML + pytest-Tests
-bench/           Messwerkzeug und Ergebnisse (results*.json, results*.md, paint_probe.py)
-tools/           Screenshots, Zeilenzählung, run_all.sh
-tests/           Fachkern und Testvoraussetzungen der Varianten
-docs/screenshots Bilder aller drei Varianten in drei Zuständen
+labcontrol/
+  domain.py       Probe, Bewertung, Freigabestatus, Begründung der Ampel
+  storage.py      SQLite: Lesen, Schreiben, Prüfpfad — die einzige Stelle,
+                  die die Datenbank verändert
+  table_model.py  QAbstractTableModel und die gezeichneten Status-Plaketten
+  main_window.py  Werkzeugleiste, Filter, Tabelle, Detailspalte, Fußzeile
+  dialogs.py      Probe anlegen/bearbeiten, Freigabe entscheiden, Über
+  audit_view.py   Prüfpfad, durchsuchbar
+  export.py       CSV
+  app.py          Start, Ablageort der Datenbank, Selbsttest
+core/
+  model.py        Ampelregeln — geteilt mit den Vergleichsvarianten
+  data.py         Datengenerator für die Erstbefüllung
+packaging/        PyInstaller-Rezept, Icon, Windows-Versionsressource
 ```
 
-## Messumgebung
+Die Fachschicht kennt kein Qt: `domain.py` und `storage.py` lassen sich ohne
+Fenster prüfen, und die Ampelregeln stehen in `core/model.py` genau einmal —
+dieselbe Datei, die auch die drei Vergleichsvarianten benutzen.
 
-Intel Xeon @ 2,10 GHz, 4 Kerne · Python 3.12.3 · PySide6 6.11.2 · Tk 8.6 ·
-Flask 3.1.3 · Chromium (Playwright 1.62) · Xvfb 1440 × 900 × 24 ·
-gemessen am 2026-09-12.
+## Tests
 
-Systempakete für die Qt- und Tkinter-Variante auf Ubuntu 24.04:
+```console
+$ pytest tests -q
+38 passed, 1 skipped in 0.44s
+```
+
+Kein Fenster, kein Bildschirm: die Qt-Tests laufen auf
+`QT_QPA_PLATFORM=offscreen`, ohne pytest-qt. Geprüft werden Ampelgrenzen und
+ihre Begründung, Suche, Filter, Sortierung, Eingabeprüfung, dass eine
+Entscheidung ohne Begründung abgelehnt wird, dass der Prüfpfad jede Änderung
+mit Alt- und Neuwert festhält und nur wächst, der CSV-Export samt Entscheidung
+sowie Tabellenmodell, Hauptfenster und Entscheidungsdialog. Der übersprungene
+Test braucht einen X-Server und gehört zur Tkinter-Vergleichsvariante.
+
+Alles zusammen — Anwendung und Vergleich — sind es 45 Tests:
 
 ```bash
-apt-get install python3-tk xvfb libegl1 libgl1 libxkbcommon-x11-0 \
-    libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 \
-    libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 \
-    libxcb-image0 libdbus-1-3 libfontconfig1 fonts-dejavu-core
+pytest tests variant_web -q
 ```
+
+## Der Variantenvergleich
+
+Vor der Anwendung stand die Frage, ob Qt hier überhaupt das richtige Werkzeug
+ist. Dazu liegt dieselbe Liste dreimal im Repo — Qt, Tkinter und als
+server-gerenderte Web-Seite — mit gemessenen Antwortzeiten, Nutzlasten und
+Screenshots: **[docs/vergleich.md](docs/vergleich.md)**.
+
+Kurzfassung: Qts Modellaktualisierung liegt bei jeder Datenmenge auf der
+Untergrenze dessen, was der gemeinsame Python-Kern ohnehin kostet (1,1 / 10,1 /
+48,7 ms bei 2 000 / 20 000 / 100 000 Zeilen), während bei Tkinter Einfügen
+*und* Zeichnen mit der Zeilenzahl wachsen (36 / 486 / 2 864 ms). Genau die
+Eigenschaft nutzt diese Anwendung: das Tabellenmodell fragt nur die knapp
+30 sichtbaren Zeilen ab.
