@@ -24,6 +24,10 @@ Dazu drei Untersuchungen, jede mit gemessenen Zahlen statt Einschätzungen:
   liegt](docs/sqlite-neues-lims.md)** — eine `ERGEBNISSE`-förmige Tabelle bis
   25 Mio Zeilen gemessen (die Ankerabfrage bleibt bei 28 ms), Benutzerrechte
   ausprobiert statt behauptet, und PostgreSQL daneben gestellt.
+* **[Neuen Benutzer anlegen](docs/benutzer.md)** — Konto, Passwort, Synonyme,
+  Rechte vom Vorbild übernehmen und **vergleichen**, bis kein Unterschied
+  bleibt. Mit der Passwortfalle des `DEFAULT`-Profils (180 Tage) und dem
+  Skript [docs/neuer_benutzer.sql](docs/neuer_benutzer.sql).
 * **[Rechte für Benutzer an den vollen Tabellen](docs/rechte.md)** — vier Rollen
   und `GRANT` **je Spalte**, damit keine Sicht nötig ist: in `PROBEN` wird von
   51 Spalten genau **eine** geschrieben. Fertiges Oracle-Skript:
