@@ -1,5 +1,7 @@
 # LabControl
 
+[![Windows-EXE](https://github.com/michaelkrinningersg-coder/TestArchitecture/actions/workflows/windows-exe.yml/badge.svg)](https://github.com/michaelkrinningersg-coder/TestArchitecture/actions/workflows/windows-exe.yml)
+
 Freigabe von Laborproben mit Prüfpfad. Qt 6 über PySide6, SQLite als Ablage,
 unter Windows eine einzelne Datei ohne Installation.
 
@@ -41,7 +43,10 @@ startbare Datei und hängt sie an den Lauf:
 3. entpacken, `LabControl.exe` starten — keine Installation, kein Python nötig
 
 Im Artefakt liegen die EXE, eine SHA256-Prüfsumme und das Protokoll des
-Selbsttests. Der Workflow lässt sich unter *Run workflow* auch von Hand
+Selbsttests; gepackt sind das rund 49 MB. Der erste Lauf
+([#1](https://github.com/michaelkrinningersg-coder/TestArchitecture/actions/runs/34701971077))
+brauchte knapp zwei Minuten: 38 Tests auf Windows in 1,1 s, PyInstaller 51 s,
+Selbsttest der fertigen EXE bestanden. Der Workflow lässt sich unter *Run workflow* auch von Hand
 auslösen; ein Tag `v1.0.0` legt zusätzlich ein Release an.
 
 Der Lauf gibt die Datei nur heraus, wenn sie vorher gestartet ist: nach dem
