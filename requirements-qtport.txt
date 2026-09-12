@@ -1,0 +1,13 @@
+# Laufzeit der Qt6-Portierung von LabControl.
+#
+# Qt 6 gibt es nur für 64-bit Windows. Die LIMS-Datenbank der NW-FVA ist
+# eine Oracle 11.2 und braucht deshalb den Thick Mode mit dem 32-bit-Client
+# — beides zusammen geht nicht. Siehe docs/portierung.md.
+PySide6>=6.6,<7
+
+# Unverändert aus dem Ursprungs-Repo übernommen, samt Versionsgrenze:
+# oracledb 4.0 hat die Unterstützung für Clients älter als 19c entfernt.
+oracledb>=3.4,<4.0
+
+# Zum Lesen von xlsx-Laufdateien.
+openpyxl>=3.1,<4.0

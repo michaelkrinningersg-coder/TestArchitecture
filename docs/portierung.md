@@ -1,0 +1,181 @@
+# LabControl von Tkinter nach Qt6 — Stand der Portierung
+
+Portiert wird die Anwendung aus
+[michaelkrinningersg-coder/testlims](https://github.com/michaelkrinningersg-coder/testlims).
+Der Code liegt hier unter [`labcontrol_qt/`](../labcontrol_qt).
+
+## Zuerst: die Portierung schneidet den Weg zur Datenbank ab
+
+Das ist kein Detail, sondern die Frage, ob sich der Umbau überhaupt lohnt.
+
+Die LIMS-Datenbank der NW-FVA ist eine **Oracle 11.2**. Der Thin Mode von
+python-oracledb spricht erst mit 12.1 — im Quelltext steht das ausdrücklich:
+
+> „Die NW-FVA arbeitet auf 11.2, dort fällt diese Entscheidung immer."
+> — `lims_db._vorrat_bauen`
+
+Deshalb lädt LabControl den **Oracle-Client aus `C:\Oracle\11.2.0`** nach und
+verbindet im Thick Mode. Dieser Client ist 32-bit, also muss das Programm
+32-bit sein — genau darum baut der Workflow des Originals eine x86-exe und
+nennt sie „die sichere Wahl".
+
+**Qt 6 gibt es nicht für 32-bit Windows.** PySide6 liefert kein `win32`-Rad,
+nur `win_amd64`; nachprüfbar in einer Zeile:
+
+```console
+$ pip download PySide6 --platform win32 --only-binary=:all: --python-version 3.12
+ERROR: Could not find a version that satisfies the requirement PySide6 (from versions: none)
+```
+
+Eine Qt6-Fassung ist damit zwangsläufig 64-bit und kann den vorhandenen
+Client nicht laden. Sie käme an die 11.2 **gar nicht heran**. Vier Wege
+führen daran vorbei:
+
+| Weg | Was zu tun ist | Woran es hängt |
+|---|---|---|
+| **64-bit-Client** | Oracle Instant Client 19c (64-bit) auf die Arbeitsplätze | 19c erreicht 11.2 noch; danach `oracledb<4` beibehalten oder anheben |
+| **Datenbank anheben** | LIMS auf 12.1 oder neuer | dann reicht der Thin Mode, kein Client mehr nötig |
+| **Brückenprozess** | Datenbankteil bleibt 32-bit-Python, die Qt6-Oberfläche spricht über eine lokale Leitung mit ihm | zwei Prozesse, zwei Bauten, eine Schnittstelle mehr |
+| **Bei Tkinter bleiben** | nichts | Qt6 entfällt |
+
+Der Brückenweg ist in dieser Portierung schon vorgesehen: die Oberfläche
+spricht nie mit `lims_db`, sondern mit einer **Quelle**
+([`labcontrol_qt/quelle.py`](../labcontrol_qt/quelle.py)). `LimsQuelle` und
+`DemoQuelle` erfüllen dieselbe Schnittstelle; eine `BrueckenQuelle` würde
+sich daneben stellen, ohne dass ein Fenster davon erfährt.
+
+## Was portiert ist
+
+| | |
+|---|---|
+| Fachschicht unverändert übernommen | **9 822 Zeilen** in 7 Modulen |
+| Oberfläche neu in Qt6 | **1 555 Zeilen** in 10 Modulen |
+| Oberfläche des Originals gesamt | **18 140 Zeilen** in 25 Modulen |
+
+Fertig und benutzbar:
+
+* **Anmeldung** — Benutzer, Passwort, Datenbank; einmal mit einer echten
+  Verbindung geprüft, Passwort nirgends gespeichert.
+* **Bearbeiten-Reiter, vollständig** — Bearbeiter für die Sitzung, Serie mit
+  Suchfeld, „Ältere Serien suchen", Untersuchungsmethode, Gerät, die
+  Übersicht der offenen Serien (ein Klick übernimmt alle drei Angaben), die
+  Dateiliste des Stationsordners mit dem Haken „nur Dateien zur gewählten
+  Serie", Dateidialog und „Auswahl verwerfen".
+* **Messfenster** mit den Reitern **Laufdatei** (die Datei als Raster, gelesen
+  vom unveränderten `dateien.py`) und **Laufkontext** (Momentaufnahme mit
+  Ladezeitpunkt, Prüfzuordnung des Geräts und CSV-Beleg).
+* **Bausteine** — Farbschema, Knöpfe, Hinweise, Rasteranzeige mit Farbe je
+  Zelle, Zahlenspalten rechtsbündig.
+
+## Was offen ist
+
+Die Fachlogik dahinter liegt jeweils schon in `kern/` oder im Ursprungs-Repo;
+zu bauen ist die Oberfläche.
+
+| Modul im Original | Zeilen | Stand |
+|---|---:|---|
+| `labcontrol.py` | 4 076 | teilweise — Anmeldung und Bearbeiten portiert; offen: Optionsdialog (~1 770), Regelkarten (~1 718), Saves, Abfragen, Info |
+| `messfenster.py` | 3 183 | teilweise — Laufdatei und Laufkontext portiert; offen: Standards, Proben, Parameter × Proben, Messung, Datenbankabfrage |
+| `qpreiter.py` | 3 167 | offen |
+| `trdfreiter.py` | 1 865 | offen |
+| `eingaberaster.py` | 934 | offen |
+| `trdflegende.py` | 459 | offen |
+| `trdfblock.py` | 387 | offen |
+| `reiterleiste.py` | 354 | entfällt — Qt bricht Reiterleisten selbst um |
+| `vergleichsfenster.py` | 341 | offen |
+| `geraetewechsel.py` | 335 | offen |
+| `qpvorschau.py` | 335 | offen |
+| `exportvorschau.py` | 264 | offen |
+| `regelkartenbild.py` | 254 | offen |
+| `auswertungsfenster.py` | 228 | offen |
+| `pflegevorschau.py` | 216 | offen |
+| `qpwahlfenster.py` | 188 | offen |
+| `kommentar.py` | 166 | offen |
+| `ausreisserfenster.py` | 156 | offen |
+| `trdfbild.py` | 135 | offen |
+| `kalender.py` | 120 | entfällt — `QDateEdit` bringt den Kalender mit |
+| `befundfenster.py` | 94 | offen |
+| `widgets.py` · `tabelle.py` · `zellenraster.py` · `suchleiste.py` | 883 | **portiert** (→ 296 Zeilen Qt) |
+
+Eine ehrliche Schätzung für den Rest: rund **10 000 Zeilen Tkinter**, die in
+Qt erfahrungsgemäß auf die Hälfte bis zwei Drittel zusammengehen. Das sind
+Wochen, keine Stunden — und nichts davon lässt sich sinnvoll blind bauen:
+die Auswertungsreiter hängen an Laufdateien echter Geräte und an Stammdaten
+aus dem LIMS.
+
+## Was Qt konkret einspart
+
+Nicht als Werbung, sondern als Begründung, warum die portierten Teile
+kürzer sind:
+
+* **Farbe je Zelle.** Eine `ttk.Treeview` färbt nur ganze Zeilen. Deshalb gibt
+  es `zellenraster.py` mit 425 Zeilen selbst gemaltem Raster. In Qt trägt das
+  Modell die Farbe und die Ansicht zeichnet sie — im Prüfpfad-Reiter steht die
+  Spalte „wird durchgeführt" grün und rot, ohne eine Zeile Zeichencode.
+* **Große Tabellen.** Eine Laufdatei darf 50 000 Zeilen haben. Die Treeview
+  legt für jede ein Element an; das Qt-Modell wird nur nach den rund 30
+  sichtbaren gefragt.
+* **Ziehen aus dem Explorer.** Im Original über `tkinterdnd2`, das die
+  tkdnd-Bibliothek zur Laufzeit nachlädt — und je nach Windows-Variante nicht.
+  Dann steht in der Oberfläche, dass das Ziehen nicht zur Verfügung steht.
+  Qt bringt es mit; der Fallbacktext entfällt.
+* **Rollbereiche.** 60 Zeilen Leinwand plus zwei `<Configure>`-Behandlungen,
+  die sich gegenseitig aufschaukeln konnten — der Kommentar dort erzählt von
+  einem Bau, der deshalb sechs Stunden hing. In Qt ein `QScrollArea`.
+* **Abgerundete Knöpfe.** 120 Zeilen Canvas mit eigener Hover- und
+  Deaktivierungslogik gegen ein Stylesheet.
+
+Dagegen steht, was Qt kostet: kein 32-bit (siehe oben), rund 70 MB statt
+15 MB je exe, und eine zweite Bibliothek, die gepflegt sein will.
+
+## Aufbau
+
+```
+labcontrol_qt/
+  kern/          unverändert aus testlims — HIER WIRD NICHTS GEÄNDERT
+                 lims_db, laufkontext, dateien, config, protokoll,
+                 sitzung, verschleppung  (9 822 Zeilen)
+  quelle.py      die Naht: LimsQuelle | DemoQuelle | später BrueckenQuelle
+  stil.py        Farben, Knöpfe, Karten  (aus widgets.py)
+  raster.py      Rasteranzeige mit Farbe je Zelle  (aus tabelle + zellenraster)
+  arbeit.py      Arbeit außerhalb des Zeichenfadens
+  anmeldung.py   Anmeldemaske
+  hauptfenster.py Kopfzeile, Reiter, Bearbeiten-Reiter
+  messfenster.py Laufdatei und Laufkontext
+  app.py         Start, Demobetrieb, Selbsttest
+```
+
+Die Regel für `kern/`: **nicht anfassen.** Eine Änderung dort gehört ins
+Ursprungs-Repo und wird von hier erneut übernommen — sonst laufen die beiden
+Oberflächen fachlich auseinander, und genau das soll eine Portierung nicht.
+Ein Test wacht darüber (`test_die_fachschicht_ist_unveraendert`).
+
+## Starten und prüfen
+
+```bash
+pip install -r requirements-qtport.txt
+
+python -m labcontrol_qt --demo        # ohne Datenbank, mit erfundenen Daten
+python -m labcontrol_qt               # mit Anmeldung an Oracle
+python -m labcontrol_qt --selftest    # hochfahren, prüfen, Rückgabewert
+
+pytest tests/test_labcontrol_qt.py -q # 16 Tests, ohne Fenster
+xvfb-run -a python tools/shoot_qtport.py   # Bildschirmfotos
+```
+
+Der Demobetrieb ist kein Ersatz für die Anmeldung, sondern der Weg, die
+Oberfläche ohne VPN anzusehen — und der Weg, auf dem die Tests und die
+Bildschirmfotos entstehen. Die Demoquelle liefert Feld für Feld dieselbe
+Gestalt wie die echte: Methoden als `(um_id, kuerzel)`, Geräte als
+`(stat_id, station)`, offene Serien als Wörterbuch mit fünf Schlüsseln.
+Ob eine Prüfung läuft, entscheidet auch dort `lims_db.pruefung_laeuft`.
+
+## Bilder
+
+| Anmeldung | Bearbeiten |
+|---|---|
+| [![Anmeldung](screenshots/port_anmeldung.png)](screenshots/port_anmeldung.png) | [![Bearbeiten](screenshots/port_bearbeiten.png)](screenshots/port_bearbeiten.png) |
+
+| Laufdatei | Laufkontext |
+|---|---|
+| [![Laufdatei](screenshots/port_laufdatei.png)](screenshots/port_laufdatei.png) | [![Laufkontext](screenshots/port_laufkontext.png)](screenshots/port_laufkontext.png) |

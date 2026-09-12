@@ -1,0 +1,117 @@
+name: LabControl-Qt6-EXE
+
+# Baut die Qt6-Portierung von LabControl zu einer einzelnen Datei.
+#
+# Nur x86-64. Das Original baut bewusst 32-bit, weil nur so der
+# 32-bit-Oracle-Client für den Thick Mode ladbar ist — und den braucht es,
+# weil die LIMS-Datenbank eine 11.2 ist. Qt 6 gibt es nicht für 32 Bit.
+# Was daraus folgt, steht in docs/portierung.md.
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "labcontrol_qt/**"
+      - "packaging/labcontrol_qt.spec"
+      - "tests/test_labcontrol_qt.py"
+      - "requirements-qtport.txt"
+      - ".github/workflows/labcontrol-qt-exe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: labcontrol-qt-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: LabControl-Qt6.exe (x86-64)
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: x64
+          cache: pip
+          cache-dependency-path: requirements-qtport.txt
+
+      - name: Abhängigkeiten installieren
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-qtport.txt
+          pip install pytest "pyinstaller~=6.0"
+
+      - name: Fachschicht auf Unversehrtheit prüfen
+        shell: pwsh
+        run: |
+          # Die Module unter labcontrol_qt/kern sind wörtlich aus dem
+          # Ursprungs-Repo übernommen. Wer sie hier ändert, lässt die beiden
+          # Oberflächen fachlich auseinanderlaufen.
+          python -c @"
+          import pathlib, sys
+          kern = pathlib.Path('labcontrol_qt/kern')
+          erwartet = {'config','dateien','laufkontext','lims_db','protokoll',
+                      'sitzung','verschleppung'}
+          da = {p.stem for p in kern.glob('*.py')} - {'__init__'}
+          fehlt = erwartet - da
+          if fehlt:
+              sys.exit(f'Fachschicht unvollstaendig: {sorted(fehlt)}')
+          zeilen = sum(len(p.read_text(encoding='utf-8', errors='replace')
+                           .splitlines()) for p in kern.glob('*.py')
+                       if p.stem in erwartet)
+          print(f'{len(erwartet)} Module, {zeilen} Zeilen Fachschicht.')
+          "@
+
+      - name: Tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest tests/test_labcontrol_qt.py -q
+
+      - name: EXE bauen
+        run: pyinstaller packaging/labcontrol_qt.spec --noconfirm
+
+      - name: Startet die gebaute EXE?
+        env:
+          QT_QPA_PLATFORM: offscreen
+          LABCONTROL_SELFTEST_LOG: selftest-qt.log
+        shell: pwsh
+        run: |
+          # Eine Fensteranwendung hängt sich nicht an die Konsole: PowerShell
+          # kehrt sofort zurück und $LASTEXITCODE wäre wertlos.
+          $process = Start-Process -FilePath ".\dist\LabControl-Qt6.exe" `
+                                   -ArgumentList "--selftest" -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "Selbsttest der EXE fehlgeschlagen (Rückgabewert $($process.ExitCode))"
+          }
+          Write-Output "Selbsttest bestanden."
+
+      - name: Prüfsumme und Zusammenfassung
+        shell: pwsh
+        run: |
+          $hash = Get-FileHash .\dist\LabControl-Qt6.exe -Algorithm SHA256
+          $size = [math]::Round((Get-Item .\dist\LabControl-Qt6.exe).Length / 1MB, 1)
+          "$($hash.Hash)  LabControl-Qt6.exe" | Out-File -Encoding ascii dist\SHA256SUMS.txt
+          Add-Content $env:GITHUB_STEP_SUMMARY "## LabControl-Qt6.exe"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- Größe: $size MB"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- SHA256: ``$($hash.Hash)``"
+          Add-Content $env:GITHUB_STEP_SUMMARY "- Architektur: **x86-64**"
+          Add-Content $env:GITHUB_STEP_SUMMARY ""
+          Add-Content $env:GITHUB_STEP_SUMMARY "> Diese Fassung erreicht die Oracle 11.2 der NW-FVA **nicht**: der Thick Mode braucht den 32-bit-Client, und Qt 6 gibt es nicht für 32 Bit. Siehe docs/portierung.md."
+
+      - name: Artefakt hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: LabControl-Qt6-windows-x64
+          path: |
+            dist/LabControl-Qt6.exe
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30

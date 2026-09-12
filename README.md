@@ -1,4 +1,22 @@
-# LabControl
+# Dieses Repo
+
+Drei Dinge liegen hier, in der Reihenfolge ihrer Entstehung:
+
+1. **[Qt6-Portierung der echten LabControl-Anwendung](docs/portierung.md)** aus
+   dem Repo *testlims* — `labcontrol_qt/`. Der aktuelle Stand: Anmeldung,
+   Bearbeiten-Reiter und die Reiter Laufdatei und Laufkontext laufen auf der
+   unveränderten Fachschicht. **Bevor daran weitergebaut wird, ist eine Frage
+   zu klären: die Portierung schneidet den Weg zur Oracle 11.2 ab** — Qt 6
+   gibt es nicht für 32 Bit, der Thick-Mode-Client aber nur.
+2. **Eine kleine Beispielanwendung** gleichen Namens (`labcontrol/`) — unten
+   beschrieben. Sie ist Eigenbau aus dem Variantenvergleich, nicht die echte
+   LabControl.
+3. **Der [Variantenvergleich](docs/vergleich.md)** Qt / Tkinter / Web, mit dem
+   die Frage anfing.
+
+---
+
+# LabControl (Beispielanwendung)
 
 [![Windows-EXE](https://github.com/michaelkrinningersg-coder/TestArchitecture/actions/workflows/windows-exe.yml/badge.svg)](https://github.com/michaelkrinningersg-coder/TestArchitecture/actions/workflows/windows-exe.yml)
 
