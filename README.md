@@ -122,11 +122,24 @@ auch das Zeichnen (11 → 223 → 1 613 ms Aufschlag): der Treeview legt jedes
 Element an, nicht nur die sichtbaren. Bei 20 000 Zeilen dauert das Leeren des
 Suchfelds knapp eine halbe Sekunde, bei 100 000 fast drei.
 
-**Die Grenze liegt zwischen 2 000 und 20 000.** Bei 2 000 Zeilen ist Tkinter für
-einen Tastendruck sogar schneller als Qt (15,6 gegen 63,2 ms) — Tkinter füllt
-200 Treffer und zeichnet nur das Nötige, Qt zeichnet nach jedem Modell-Reset das
-ganze Sichtfeld neu. Wer unter ein paar tausend Zeilen bleibt, gewinnt mit Qt
-beim Tempo nichts.
+**Unter ein paar tausend Zeilen ist Tkinter nicht langsamer.** Bei 2 000 Zeilen
+ist es für einen Filter-Tastendruck sogar schneller als Qt (15,6 gegen 63,2 ms):
+Tkinter füllt 200 Treffer und zeichnet nur das Nötige, Qt zeichnet nach jedem
+Modell-Reset das ganze Sichtfeld neu. Wo der Gleichstand genau liegt, ist
+nachgemessen (`bench/results_crossover.json`, gezeichneter Vollaufbau):
+
+| Zeilen | 3 000 | 4 000 | 6 000 | 8 000 |
+|---|---|---|---|---|
+| Qt | 70,7 | 72,1 | 78,7 | 74,4 |
+| Tkinter | 48,0 | 59,2 | 68,8 | 90,1 |
+
+Hier kippt es zwischen 6 000 und 8 000 Zeilen. Diese Grenze ist aber ein Artefakt
+des konstanten Zeichenaufwands dieser Umgebung, kein Eigenschaftsunterschied der
+Toolkits: ohne erzwungenes Neuzeichnen liegt Qt bei jeder Größe vorn (2,0 gegen
+39,6 ms bei 4 000 Zeilen, 4,1 gegen 97,0 ms bei 8 000). Mit schnellerer Grafik
+wandert der Gleichstand nach links und verschwindet praktisch. Ein erster
+Messdurchlauf legte ihn zwischen 4 000 und 6 000 — die Streuung von Qts
+Zeichenkonstante ist größer als der Abstand der beiden Kurven in diesem Bereich.
 
 **Zum Zeichnen, ehrlich gesagt:** der Aufschlag bei Qt (70 · 68 · 96 ms) ist
 Software-Rasterung in einem Container ohne GPU. Einzeln gemessen
@@ -234,7 +247,7 @@ core/            Fachlogik: Modell, Ampelregeln, Datengenerator, Filter/Sortieru
 variant_qt/      PySide6: QTableView über QAbstractTableModel
 variant_tk/      Tkinter: ttk.Treeview mit Zeilen-Tags und Debouncing
 variant_web/     Flask: server-gerendertes HTML + pytest-Tests
-bench/           Messwerkzeug und Ergebnisse (results.json, results.md, paint_probe.py)
+bench/           Messwerkzeug und Ergebnisse (results*.json, results*.md, paint_probe.py)
 tools/           Screenshots, Zeilenzählung, run_all.sh
 tests/           Fachkern und Testvoraussetzungen der Varianten
 docs/screenshots Bilder aller drei Varianten in drei Zuständen
