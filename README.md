@@ -24,6 +24,10 @@ Dazu drei Untersuchungen, jede mit gemessenen Zahlen statt Einschätzungen:
   liegt](docs/sqlite-neues-lims.md)** — eine `ERGEBNISSE`-förmige Tabelle bis
   25 Mio Zeilen gemessen (die Ankerabfrage bleibt bei 28 ms), Benutzerrechte
   ausprobiert statt behauptet, und PostgreSQL daneben gestellt.
+* **[Welche Datenbank — und was die Oracle-Lizenz kostet](docs/datenbankwahl.md)**
+  — Oracle Free hat eine harte Grenze bei **12 GB** (Oracles eigene Doku), das
+  reicht bei euch grob 1–11 Jahre. PostgreSQL kostet nichts und trägt euer SQL:
+  **38 von 38 Anweisungen** laufen, nötig waren vier `NVL`→`COALESCE`.
 * **[Zwei Varianten für ein neues LIMS](docs/varianten.md)** — Oracle behalten
   und ausdünnen, oder SQLite mit der Oberfläche als Rechtesystem? Ausgezählt:
   von 456 Tabellen werden **27** berührt und **168 von 5 976 Spalten** (2,8 %),
